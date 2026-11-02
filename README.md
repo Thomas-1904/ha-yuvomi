@@ -19,6 +19,8 @@ Connects the self-hosted family planner [Yuvomi](https://github.com/ulsklyc/yuvo
 
 The integration talks to Yuvomi **only through the public REST API (`/api/v1`)** with an API token and the scopes listed below – the interface the Yuvomi maintainer commits to keeping stable. Every endpoint it uses is part of Yuvomi's OpenAPI specification; internal endpoints, the database or files are never touched. Questions about this integration go to this repository, not to the Yuvomi project.
 
+**Contents:** [Highlights](#highlights) · [Requirements](#requirements) · [Installation](#installation) · [API token and scopes](#api-token-and-scopes) · [Modules and entities](#modules-and-entities) · [Options](#options) · [Keeping Home Assistant up to date](#keeping-home-assistant-up-to-date) · [Bring sync (optional)](#bring-sync-optional) · [Services](#services) · [Events](#events) · [Blueprints](#blueprints) · [Troubleshooting](#troubleshooting) · [Diagnostics](#diagnostics) · [Removal](#removal) · [Known limitations](#known-limitations) · [Maintenance](#maintenance) · [License](#license)
+
 ## Highlights
 
 - ✅ **Tasks, shopping lists, pantry** as Home Assistant to-do lists – create, edit, complete, delete

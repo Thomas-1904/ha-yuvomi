@@ -19,6 +19,8 @@ Bindet den selbst gehosteten Familienplaner [Yuvomi](https://github.com/ulsklyc/
 
 Die Integration spricht **ausschließlich über die öffentliche REST-API (`/api/v1`)** mit einem API-Token und den unten genannten Scopes – die Schnittstelle, die der Yuvomi-Entwickler stabil zusagt. Jeder genutzte Endpunkt steht in Yuvomis OpenAPI-Spezifikation; interne Endpunkte, Datenbank oder Dateien werden nie angefasst. Fragen zu dieser Integration bitte hier im Repository stellen, nicht beim Yuvomi-Projekt.
 
+**Inhalt:** [Auf einen Blick](#auf-einen-blick) · [Voraussetzungen](#voraussetzungen) · [Installation](#installation) · [API-Token und Scopes](#api-token-und-scopes) · [Module und Entitäten](#module-und-entitäten) · [Optionen](#optionen) · [Aktuell halten](#aktuell-halten) · [Bring-Abgleich (optional)](#bring-abgleich-optional) · [Dienste](#dienste) · [Ereignisse](#ereignisse) · [Blueprints](#blueprints) · [Fehlersuche](#fehlersuche) · [Diagnose](#diagnose) · [Entfernen](#entfernen) · [Bekannte Grenzen](#bekannte-grenzen) · [Pflege](#pflege) · [Lizenz](#lizenz)
+
 ## Auf einen Blick
 
 - ✅ **Aufgaben, Einkaufslisten, Vorrat** als To-do-Listen in Home Assistant – anlegen, bearbeiten, abhaken, löschen
