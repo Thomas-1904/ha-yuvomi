@@ -1,0 +1,977 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Yuvomi",
+        "description": "Address of your Yuvomi instance and an API token.",
+        "data": {
+          "url": "URL",
+          "token": "API-Token"
+        }
+      },
+      "modules": {
+        "title": "Modules",
+        "description": "Pick the areas to sync. Changeable later.",
+        "data": {
+          "modules": "Modules",
+          "fire_events": "Fire change events"
+        }
+      },
+      "reauth_confirm": {
+        "title": "New token",
+        "description": "The token was rejected.",
+        "data": {
+          "token": "API-Token"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid token",
+      "cannot_connect": "Cannot connect",
+      "unknown": "Unknown error",
+      "unsupported_version": "This Yuvomi version is not supported – please update Yuvomi (2.79 or newer).",
+      "missing_scope": "The token lacks at least the scope \"family:read\"."
+    },
+    "abort": {
+      "already_configured": "Already configured",
+      "reauth_successful": "Token updated"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options",
+        "description": "Deselected modules remove their entities.",
+        "data": {
+          "modules": "Modules",
+          "fire_events": "Fire change events",
+          "scan_interval": "Polling interval (s)",
+          "push_channel": "Instant updates (Yuvomi notifies via webhook)",
+          "bring_entity": "Bring list to sync (empty = off)",
+          "bring_list": "Yuvomi shopping list for the Bring sync"
+        }
+      }
+    }
+  },
+  "selector": {
+    "modules": {
+      "options": {
+        "tasks": "Aufgaben",
+        "shopping": "Einkaufslisten",
+        "calendar": "Familienkalender",
+        "meals": "Essensplan",
+        "recipes": "Rezepte",
+        "pantry": "Vorrat",
+        "inventory": "Inventar & Wartung",
+        "housekeeping": "Putzplan & Haushaltshilfe",
+        "waste": "Müllabfuhr",
+        "birthdays": "Geburtstage",
+        "budget": "Budget, Konten & Abos",
+        "loans": "Kredite",
+        "split": "Geteilte Ausgaben",
+        "rewards": "Belohnungen & Taschengeld",
+        "reminders": "Erinnerungen",
+        "notes": "Notizen",
+        "contacts": "Kontakte",
+        "documents": "Dokumente (Fristen)",
+        "schedule": "Schichtplan",
+        "health": "Gesundheit (Medikamente, Vitalwerte, Vorsorge)"
+      }
+    }
+  },
+  "entity": {
+    "todo": {
+      "tasks": {
+        "name": "Tasks"
+      },
+      "pantry": {
+        "name": "Pantry"
+      }
+    },
+    "calendar": {
+      "family": {
+        "name": "Family calendar"
+      },
+      "waste": {
+        "name": "Waste collection"
+      },
+      "meals": {
+        "name": "Meal plan"
+      },
+      "birthdays": {
+        "name": "Birthdays"
+      },
+      "schedule": {
+        "name": "Shift plan"
+      },
+      "deadlines": {
+        "name": "Deadlines"
+      }
+    },
+    "sensor": {
+      "tasks_open": {
+        "name": "Open tasks"
+      },
+      "tasks_overdue": {
+        "name": "Overdue tasks"
+      },
+      "tasks_done_today": {
+        "name": "Done today"
+      },
+      "meal_today": {
+        "name": "Meal today"
+      },
+      "shopping_open": {
+        "name": "Shopping open"
+      },
+      "waste_next": {
+        "name": "Next waste collection"
+      },
+      "pantry_expiring": {
+        "name": "Pantry expiring"
+      },
+      "events_upcoming": {
+        "name": "Upcoming events"
+      },
+      "birthday_next": {
+        "name": "Next birthday"
+      },
+      "housekeeping_due": {
+        "name": "Chores due"
+      },
+      "budget_expenses": {
+        "name": "Expenses this month"
+      },
+      "budget_balance": {
+        "name": "Balance this month"
+      },
+      "webhook": {
+        "name": "Webhook"
+      },
+      "pantry_items": {
+        "name": "Pantry items"
+      },
+      "pantry_low": {
+        "name": "Pantry low"
+      },
+      "recipes": {
+        "name": "Recipes"
+      },
+      "inventory_items": {
+        "name": "Inventory"
+      },
+      "subscriptions_monthly": {
+        "name": "Subscriptions per month"
+      },
+      "loans_remaining": {
+        "name": "Loans remaining"
+      },
+      "split_balance": {
+        "name": "Split balance"
+      },
+      "rewards_pending": {
+        "name": "Pending redemptions"
+      },
+      "reminders_pending": {
+        "name": "Pending reminders"
+      },
+      "notes_pinned": {
+        "name": "Pinned notes"
+      },
+      "contacts": {
+        "name": "Contacts"
+      },
+      "documents_expiring": {
+        "name": "Documents expiring"
+      },
+      "shifts_today": {
+        "name": "Shifts today"
+      },
+      "meds_due": {
+        "name": "Medications"
+      },
+      "prevention_due": {
+        "name": "Prevention due"
+      },
+      "weight": {
+        "name": "Weight"
+      },
+      "blood_pressure": {
+        "name": "Blood pressure"
+      },
+      "nutrition_kcal": {
+        "name": "Calories today"
+      },
+      "tasks_done_week": {
+        "name": "Done this week"
+      },
+      "tasks_done_month": {
+        "name": "Done 30 days"
+      },
+      "tasks_streak": {
+        "name": "Completion streak"
+      },
+      "tasks_recurring": {
+        "name": "Recurring tasks"
+      },
+      "bring_sync": {
+        "name": "Bring sync"
+      }
+    },
+    "binary_sensor": {
+      "waste_today": {
+        "name": "Waste today"
+      },
+      "waste_tomorrow": {
+        "name": "Waste tomorrow"
+      },
+      "tasks_overdue_any": {
+        "name": "Tasks overdue"
+      },
+      "housekeeper_present": {
+        "name": "Housekeeper present"
+      },
+      "reminder_due": {
+        "name": "Reminder due"
+      },
+      "pantry_expired": {
+        "name": "Pantry expired"
+      }
+    },
+    "button": {
+      "refresh": {
+        "name": "Refresh"
+      }
+    }
+  },
+  "services": {
+    "api_request": {
+      "name": "API-Aufruf",
+      "description": "Ruft einen beliebigen Endpunkt auf.",
+      "fields": {
+        "path": {
+          "name": "Pfad (/api/v1/…)",
+          "description": ""
+        },
+        "method": {
+          "name": "Methode",
+          "description": ""
+        },
+        "body": {
+          "name": "Body (JSON)",
+          "description": ""
+        },
+        "params": {
+          "name": "Query-Parameter",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "create": {
+      "name": "Anlegen",
+      "description": "Legt ein Objekt jeder Yuvomi-Ressource an.",
+      "fields": {
+        "resource": {
+          "name": "Ressource",
+          "description": ""
+        },
+        "parent_id": {
+          "name": "Übergeordnete ID (Liste, Gruppe, Kredit …)",
+          "description": ""
+        },
+        "data": {
+          "name": "Felder (JSON)",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "get": {
+      "name": "Abrufen",
+      "description": "Liest ein Objekt oder eine Liste.",
+      "fields": {
+        "resource": {
+          "name": "Ressource",
+          "description": ""
+        },
+        "id": {
+          "name": "ID (leer = Liste)",
+          "description": ""
+        },
+        "parent_id": {
+          "name": "Übergeordnete ID",
+          "description": ""
+        },
+        "params": {
+          "name": "Query-Parameter",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "update": {
+      "name": "Ändern",
+      "description": "Ändert ein Objekt (nur angegebene Felder).",
+      "fields": {
+        "resource": {
+          "name": "Ressource",
+          "description": ""
+        },
+        "id": {
+          "name": "ID",
+          "description": ""
+        },
+        "parent_id": {
+          "name": "Übergeordnete ID",
+          "description": ""
+        },
+        "data": {
+          "name": "Geänderte Felder (JSON)",
+          "description": ""
+        },
+        "merge": {
+          "name": "Mit aktuellem Stand zusammenführen",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "delete": {
+      "name": "Löschen",
+      "description": "Löscht ein Objekt.",
+      "fields": {
+        "resource": {
+          "name": "Ressource",
+          "description": ""
+        },
+        "id": {
+          "name": "ID",
+          "description": ""
+        },
+        "parent_id": {
+          "name": "Übergeordnete ID",
+          "description": ""
+        },
+        "params": {
+          "name": "Query-Parameter",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "add_task": {
+      "name": "Aufgabe anlegen",
+      "description": "Legt eine Aufgabe an.",
+      "fields": {
+        "title": {
+          "name": "Titel",
+          "description": ""
+        },
+        "description": {
+          "name": "Beschreibung",
+          "description": ""
+        },
+        "due_date": {
+          "name": "Fällig",
+          "description": ""
+        },
+        "assigned_to": {
+          "name": "Zuweisen (Benutzer-IDs)",
+          "description": ""
+        },
+        "priority": {
+          "name": "Priorität",
+          "description": ""
+        },
+        "category": {
+          "name": "Kategorie",
+          "description": ""
+        },
+        "points": {
+          "name": "Punkte",
+          "description": ""
+        },
+        "visibility": {
+          "name": "Sichtbarkeit",
+          "description": ""
+        },
+        "recurrence": {
+          "name": "Wiederholung (RRULE)",
+          "description": "RRULE, e.g. FREQ=WEEKLY;BYDAY=MO"
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        },
+        "due_time": {
+          "name": "Time",
+          "description": "Optional time"
+        }
+      }
+    },
+    "complete_task": {
+      "name": "Aufgabenstatus",
+      "description": "Setzt den Status, optional mit „erledigt von“.",
+      "fields": {
+        "task_id": {
+          "name": "Aufgaben-ID",
+          "description": ""
+        },
+        "done_by_user_id": {
+          "name": "Erledigt von (Benutzer-ID)",
+          "description": ""
+        },
+        "status": {
+          "name": "Status",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "add_shopping_item": {
+      "name": "Artikel auf Einkaufsliste",
+      "description": "Setzt einen Artikel auf eine Liste.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": ""
+        },
+        "list_id": {
+          "name": "Listen-ID (leer = erste)",
+          "description": ""
+        },
+        "quantity": {
+          "name": "Menge",
+          "description": ""
+        },
+        "category": {
+          "name": "Kategorie",
+          "description": ""
+        },
+        "notes": {
+          "name": "Notiz",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "clear_checked": {
+      "name": "Erledigte Artikel löschen",
+      "description": "Entfernt abgehakte Artikel.",
+      "fields": {
+        "list_id": {
+          "name": "Listen-ID",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "add_meal": {
+      "name": "Essen planen",
+      "description": "Trägt ein Essen ein.",
+      "fields": {
+        "date": {
+          "name": "Datum",
+          "description": ""
+        },
+        "title": {
+          "name": "Titel",
+          "description": ""
+        },
+        "meal_type": {
+          "name": "Mahlzeit",
+          "description": ""
+        },
+        "notes": {
+          "name": "Notiz",
+          "description": ""
+        },
+        "recipe_id": {
+          "name": "Rezept-ID",
+          "description": ""
+        },
+        "cook_user_id": {
+          "name": "Koch (Benutzer-ID)",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "meals_to_shopping": {
+      "name": "Zutaten auf Einkaufsliste",
+      "description": "Übernimmt Zutaten eines Zeitraums.",
+      "fields": {
+        "from_date": {
+          "name": "Von",
+          "description": ""
+        },
+        "to_date": {
+          "name": "Bis",
+          "description": ""
+        },
+        "list_id": {
+          "name": "Listen-ID",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "pantry_to_shopping": {
+      "name": "Knappen Vorrat auf Liste",
+      "description": "Setzt leere/knappe Vorräte auf die Liste.",
+      "fields": {
+        "list_id": {
+          "name": "Listen-ID",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "shopping_to_pantry": {
+      "name": "Gekauftes in den Vorrat",
+      "description": "Übernimmt abgehakte Artikel in den Vorrat.",
+      "fields": {
+        "list_id": {
+          "name": "Listen-ID",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "complete_housekeeping": {
+      "name": "Putzaufgabe erledigt",
+      "description": "Markiert eine Putzaufgabe als erledigt.",
+      "fields": {
+        "task_id": {
+          "name": "Aufgaben-ID",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "housekeeper_check": {
+      "name": "Haushaltshilfe ein-/auschecken",
+      "description": "Check-in oder Check-out.",
+      "fields": {
+        "direction": {
+          "name": "Richtung (in/out)",
+          "description": ""
+        },
+        "worker_id": {
+          "name": "Person-ID",
+          "description": ""
+        },
+        "extras": {
+          "name": "Extras (Betrag)",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "complete_inventory_date": {
+      "name": "Wartung erledigt",
+      "description": "Schließt einen Wartungstermin ab.",
+      "fields": {
+        "item_id": {
+          "name": "Gegenstand-ID",
+          "description": ""
+        },
+        "date_id": {
+          "name": "Termin-ID",
+          "description": ""
+        },
+        "odometer": {
+          "name": "Kilometerstand",
+          "description": ""
+        },
+        "vendor": {
+          "name": "Werkstatt",
+          "description": ""
+        },
+        "note": {
+          "name": "Notiz",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "add_budget_entry": {
+      "name": "Buchung anlegen",
+      "description": "Bucht Ausgabe oder Einnahme.",
+      "fields": {
+        "title": {
+          "name": "Titel",
+          "description": ""
+        },
+        "amount": {
+          "name": "Betrag",
+          "description": ""
+        },
+        "date": {
+          "name": "Datum",
+          "description": ""
+        },
+        "entry_type": {
+          "name": "Art",
+          "description": ""
+        },
+        "category": {
+          "name": "Kategorie",
+          "description": ""
+        },
+        "subcategory": {
+          "name": "Unterkategorie",
+          "description": ""
+        },
+        "account_id": {
+          "name": "Konto-ID",
+          "description": ""
+        },
+        "visibility": {
+          "name": "Sichtbarkeit",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "renew_subscription": {
+      "name": "Abo bezahlt",
+      "description": "Schaltet ein Abo weiter.",
+      "fields": {
+        "subscription_id": {
+          "name": "Abo-ID",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "loan_payment": {
+      "name": "Kreditrate buchen",
+      "description": "Bucht eine Rate.",
+      "fields": {
+        "loan_id": {
+          "name": "Kredit-ID",
+          "description": ""
+        },
+        "paid_date": {
+          "name": "Datum",
+          "description": ""
+        },
+        "amount": {
+          "name": "Betrag",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "reward_bonus": {
+      "name": "Bonuspunkte",
+      "description": "Vergibt Punkte.",
+      "fields": {
+        "user_id": {
+          "name": "Benutzer-ID",
+          "description": ""
+        },
+        "points": {
+          "name": "Punkte",
+          "description": ""
+        },
+        "reason": {
+          "name": "Grund",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "redeem_reward": {
+      "name": "Belohnung einlösen",
+      "description": "Fordert eine Belohnung an.",
+      "fields": {
+        "catalog_id": {
+          "name": "Belohnungs-ID",
+          "description": ""
+        },
+        "user_id": {
+          "name": "Für Benutzer-ID",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "dismiss_reminder": {
+      "name": "Erinnerung erledigen",
+      "description": "Blendet eine Erinnerung aus.",
+      "fields": {
+        "reminder_id": {
+          "name": "Erinnerungs-ID",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "pin_note": {
+      "name": "Notiz anheften",
+      "description": "Heftet eine Notiz an oder ab.",
+      "fields": {
+        "note_id": {
+          "name": "Notiz-ID",
+          "description": ""
+        },
+        "pinned": {
+          "name": "Angeheftet",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "check_note_item": {
+      "name": "Checklistenpunkt abhaken",
+      "description": "Hakt eine Zeile einer Notiz ab.",
+      "fields": {
+        "note_id": {
+          "name": "Notiz-ID",
+          "description": ""
+        },
+        "line": {
+          "name": "Zeile",
+          "description": ""
+        },
+        "checked": {
+          "name": "Abgehakt",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "add_vital": {
+      "name": "Vitalwert eintragen",
+      "description": "Schreibt Gewicht, Blutdruck usw.",
+      "fields": {
+        "type": {
+          "name": "Art (weight, bp, pulse …)",
+          "description": ""
+        },
+        "value": {
+          "name": "Wert",
+          "description": ""
+        },
+        "unit": {
+          "name": "Einheit",
+          "description": ""
+        },
+        "systolic": {
+          "name": "Systolisch",
+          "description": ""
+        },
+        "diastolic": {
+          "name": "Diastolisch",
+          "description": ""
+        },
+        "pulse": {
+          "name": "Puls",
+          "description": ""
+        },
+        "note": {
+          "name": "Notiz",
+          "description": ""
+        },
+        "user_id": {
+          "name": "Für Benutzer-ID",
+          "description": ""
+        },
+        "visibility": {
+          "name": "Sichtbarkeit",
+          "description": ""
+        },
+        "measured_at": {
+          "name": "Gemessen um",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "medication_dose": {
+      "name": "Medikament genommen",
+      "description": "Bestätigt oder überspringt eine Einnahme.",
+      "fields": {
+        "log_id": {
+          "name": "Einnahme-ID",
+          "description": ""
+        },
+        "medication_id": {
+          "name": "Medikament-ID (ungeplant)",
+          "description": ""
+        },
+        "action": {
+          "name": "Aktion",
+          "description": ""
+        },
+        "stock_deduct": {
+          "name": "Vom Vorrat abziehen",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "add_nutrition": {
+      "name": "Ernährung eintragen",
+      "description": "Trägt eine Mahlzeit mit Nährwerten ein.",
+      "fields": {
+        "title": {
+          "name": "Titel",
+          "description": ""
+        },
+        "meal_type": {
+          "name": "Mahlzeit",
+          "description": ""
+        },
+        "energy_kcal": {
+          "name": "kcal",
+          "description": ""
+        },
+        "protein_g": {
+          "name": "Eiweiß g",
+          "description": ""
+        },
+        "carbs_g": {
+          "name": "Kohlenhydrate g",
+          "description": ""
+        },
+        "fat_g": {
+          "name": "Fett g",
+          "description": ""
+        },
+        "sugar_g": {
+          "name": "Zucker g",
+          "description": ""
+        },
+        "fiber_g": {
+          "name": "Ballaststoffe g",
+          "description": ""
+        },
+        "salt_g": {
+          "name": "Salz g",
+          "description": ""
+        },
+        "note": {
+          "name": "Notiz",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "refresh": {
+      "name": "Neu laden",
+      "description": "Lädt alle Daten sofort neu.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
+        }
+      }
+    },
+    "sync_bring": {
+      "name": "Sync Bring",
+      "description": "Sync the Yuvomi shopping list with Bring now.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Yuvomi",
+          "description": "Optional"
+        }
+      }
+    }
+  },
+  "issues": {
+    "too_old": {
+      "title": "Yuvomi too old",
+      "description": "The Yuvomi instance (version {version}) is older than this integration supports. Please update Yuvomi."
+    },
+    "legacy": {
+      "title": "Yuvomi update recommended",
+      "description": "Yuvomi {version} does not report an API generation yet (`client_api`, available from Yuvomi 2.84). The integration works, but can only verify compatibility reliably from 2.84 on. Updating Yuvomi is recommended."
+    },
+    "newer_api": {
+      "title": "Newer Yuvomi API",
+      "description": "Yuvomi {version} reports API generation {api}; this integration only knows generation 1. It may work but is untested – please check for an integration update."
+    }
+  }
+}

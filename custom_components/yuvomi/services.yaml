@@ -1,0 +1,922 @@
+api_request:
+  fields:
+    path:
+      required: true
+      selector:
+        text: {}
+    method:
+      selector:
+        select:
+          options: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+    body:
+      selector:
+        object: {}
+    params:
+      selector:
+        object: {}
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+create:
+  fields:
+    resource:
+      required: true
+      selector:
+        select:
+          options:
+          - activity
+          - birthday
+          - budget_account
+          - budget_category
+          - budget_entry
+          - budget_transfer
+          - contact
+          - document
+          - event
+          - fast
+          - housekeeping_log
+          - housekeeping_task
+          - housekeeping_visit
+          - inventory_item
+          - inventory_location
+          - inventory_service_log
+          - lab_report
+          - loan
+          - loan_payment
+          - local_calendar
+          - meal
+          - meal_ingredient
+          - medication
+          - medication_log
+          - money_entry
+          - note
+          - nutrition_entry
+          - pantry_item
+          - pantry_location
+          - prevention_record
+          - quick_link
+          - recipe
+          - reminder
+          - reward
+          - reward_bonus
+          - reward_redemption
+          - shift_extra
+          - shift_override
+          - shift_type
+          - shopping_category
+          - shopping_item
+          - shopping_list
+          - shopping_store
+          - split_expense
+          - split_group
+          - split_settlement
+          - subscription
+          - task
+          - task_category
+          - task_comment
+          - vital
+          - waste_pickup
+          - waste_schedule
+          - waste_type
+    parent_id:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    data:
+      selector:
+        object: {}
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+get:
+  fields:
+    resource:
+      required: true
+      selector:
+        select:
+          options:
+          - activity
+          - birthday
+          - budget_account
+          - budget_category
+          - budget_entry
+          - budget_transfer
+          - contact
+          - document
+          - event
+          - fast
+          - housekeeping_log
+          - housekeeping_task
+          - housekeeping_visit
+          - inventory_item
+          - inventory_location
+          - inventory_service_log
+          - lab_report
+          - loan
+          - loan_payment
+          - local_calendar
+          - meal
+          - meal_ingredient
+          - medication
+          - medication_log
+          - money_entry
+          - note
+          - nutrition_entry
+          - pantry_item
+          - pantry_location
+          - prevention_record
+          - quick_link
+          - recipe
+          - reminder
+          - reward
+          - reward_bonus
+          - reward_redemption
+          - shift_extra
+          - shift_override
+          - shift_type
+          - shopping_category
+          - shopping_item
+          - shopping_list
+          - shopping_store
+          - split_expense
+          - split_group
+          - split_settlement
+          - subscription
+          - task
+          - task_category
+          - task_comment
+          - vital
+          - waste_pickup
+          - waste_schedule
+          - waste_type
+    id:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    parent_id:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    params:
+      selector:
+        object: {}
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+update:
+  fields:
+    resource:
+      required: true
+      selector:
+        select:
+          options:
+          - activity
+          - birthday
+          - budget_account
+          - budget_category
+          - budget_entry
+          - budget_transfer
+          - contact
+          - document
+          - event
+          - fast
+          - housekeeping_log
+          - housekeeping_task
+          - housekeeping_visit
+          - inventory_item
+          - inventory_location
+          - inventory_service_log
+          - lab_report
+          - loan
+          - loan_payment
+          - local_calendar
+          - meal
+          - meal_ingredient
+          - medication
+          - medication_log
+          - money_entry
+          - note
+          - nutrition_entry
+          - pantry_item
+          - pantry_location
+          - prevention_record
+          - quick_link
+          - recipe
+          - reminder
+          - reward
+          - reward_bonus
+          - reward_redemption
+          - shift_extra
+          - shift_override
+          - shift_type
+          - shopping_category
+          - shopping_item
+          - shopping_list
+          - shopping_store
+          - split_expense
+          - split_group
+          - split_settlement
+          - subscription
+          - task
+          - task_category
+          - task_comment
+          - vital
+          - waste_pickup
+          - waste_schedule
+          - waste_type
+    id:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    parent_id:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    data:
+      selector:
+        object: {}
+    merge:
+      selector:
+        boolean: {}
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+delete:
+  fields:
+    resource:
+      required: true
+      selector:
+        select:
+          options:
+          - activity
+          - birthday
+          - budget_account
+          - budget_category
+          - budget_entry
+          - budget_transfer
+          - contact
+          - document
+          - event
+          - fast
+          - housekeeping_log
+          - housekeeping_task
+          - housekeeping_visit
+          - inventory_item
+          - inventory_location
+          - inventory_service_log
+          - lab_report
+          - loan
+          - loan_payment
+          - local_calendar
+          - meal
+          - meal_ingredient
+          - medication
+          - medication_log
+          - money_entry
+          - note
+          - nutrition_entry
+          - pantry_item
+          - pantry_location
+          - prevention_record
+          - quick_link
+          - recipe
+          - reminder
+          - reward
+          - reward_bonus
+          - reward_redemption
+          - shift_extra
+          - shift_override
+          - shift_type
+          - shopping_category
+          - shopping_item
+          - shopping_list
+          - shopping_store
+          - split_expense
+          - split_group
+          - split_settlement
+          - subscription
+          - task
+          - task_category
+          - task_comment
+          - vital
+          - waste_pickup
+          - waste_schedule
+          - waste_type
+    id:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    parent_id:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    params:
+      selector:
+        object: {}
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+add_task:
+  fields:
+    title:
+      required: true
+      selector:
+        text: {}
+    description:
+      selector:
+        text:
+          multiline: true
+    due_date:
+      selector:
+        date: {}
+    due_time:
+      selector:
+        time: {}
+    assigned_to:
+      selector:
+        object: {}
+    priority:
+      selector:
+        select:
+          options: ["none", "low", "medium", "high", "urgent"]
+    category:
+      selector:
+        text: {}
+    points:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    visibility:
+      selector:
+        select:
+          options: ["all","assignees","private","shared","shared_amount","family"]
+    recurrence:
+      selector:
+        text: {}
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+complete_task:
+  fields:
+    task_id:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    done_by_user_id:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    status:
+      selector:
+        select:
+          options: ["done", "open", "in_progress"]
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+add_shopping_item:
+  fields:
+    name:
+      required: true
+      selector:
+        text: {}
+    list_id:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    quantity:
+      selector:
+        text: {}
+    category:
+      selector:
+        text: {}
+    notes:
+      selector:
+        text: {}
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+clear_checked:
+  fields:
+    list_id:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+add_meal:
+  fields:
+    date:
+      required: true
+      selector:
+        date: {}
+    title:
+      required: true
+      selector:
+        text: {}
+    meal_type:
+      selector:
+        select:
+          options: ["breakfast", "lunch", "dinner", "snack"]
+    notes:
+      selector:
+        text: {}
+    recipe_id:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    cook_user_id:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+meals_to_shopping:
+  fields:
+    from_date:
+      required: true
+      selector:
+        date: {}
+    to_date:
+      required: true
+      selector:
+        date: {}
+    list_id:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+pantry_to_shopping:
+  fields:
+    list_id:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+shopping_to_pantry:
+  fields:
+    list_id:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+complete_housekeeping:
+  fields:
+    task_id:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+housekeeper_check:
+  fields:
+    direction:
+      required: true
+      selector:
+        select:
+          options: ["in", "out"]
+    worker_id:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    extras:
+      selector:
+        number:
+          min: 0
+          max: 1000000
+          step: 0.01
+          mode: box
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+complete_inventory_date:
+  fields:
+    item_id:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    date_id:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    odometer:
+      selector:
+        number:
+          min: 0
+          max: 1000000
+          step: 0.01
+          mode: box
+    vendor:
+      selector:
+        text: {}
+    note:
+      selector:
+        text: {}
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+add_budget_entry:
+  fields:
+    title:
+      required: true
+      selector:
+        text: {}
+    amount:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 1000000
+          step: 0.01
+          mode: box
+    date:
+      required: true
+      selector:
+        date: {}
+    entry_type:
+      selector:
+        select:
+          options: ["expense", "income"]
+    category:
+      selector:
+        text: {}
+    subcategory:
+      selector:
+        text: {}
+    account_id:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    visibility:
+      selector:
+        select:
+          options: ["all","assignees","private","shared","shared_amount","family"]
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+renew_subscription:
+  fields:
+    subscription_id:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+loan_payment:
+  fields:
+    loan_id:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    paid_date:
+      selector:
+        date: {}
+    amount:
+      selector:
+        number:
+          min: 0
+          max: 1000000
+          step: 0.01
+          mode: box
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+reward_bonus:
+  fields:
+    user_id:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    points:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    reason:
+      selector:
+        text: {}
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+redeem_reward:
+  fields:
+    catalog_id:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    user_id:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+dismiss_reminder:
+  fields:
+    reminder_id:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+pin_note:
+  fields:
+    note_id:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    pinned:
+      selector:
+        boolean: {}
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+check_note_item:
+  fields:
+    note_id:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    line:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    checked:
+      selector:
+        boolean: {}
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+add_vital:
+  fields:
+    type:
+      required: true
+      selector:
+        text: {}
+    value:
+      selector:
+        number:
+          min: 0
+          max: 1000000
+          step: 0.01
+          mode: box
+    unit:
+      selector:
+        text: {}
+    systolic:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    diastolic:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    pulse:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    note:
+      selector:
+        text: {}
+    user_id:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    visibility:
+      selector:
+        select:
+          options: ["all","assignees","private","shared","shared_amount","family"]
+    measured_at:
+      selector:
+        datetime: {}
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+medication_dose:
+  fields:
+    log_id:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    medication_id:
+      selector:
+        number:
+          min: 0
+          max: 1000000000
+          mode: box
+    action:
+      selector:
+        select:
+          options: ["take", "skip"]
+    stock_deduct:
+      selector:
+        number:
+          min: 0
+          max: 1000000
+          step: 0.01
+          mode: box
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+add_nutrition:
+  fields:
+    title:
+      required: true
+      selector:
+        text: {}
+    meal_type:
+      selector:
+        select:
+          options: ["breakfast", "lunch", "dinner", "snack"]
+    energy_kcal:
+      selector:
+        number:
+          min: 0
+          max: 1000000
+          step: 0.01
+          mode: box
+    protein_g:
+      selector:
+        number:
+          min: 0
+          max: 1000000
+          step: 0.01
+          mode: box
+    carbs_g:
+      selector:
+        number:
+          min: 0
+          max: 1000000
+          step: 0.01
+          mode: box
+    fat_g:
+      selector:
+        number:
+          min: 0
+          max: 1000000
+          step: 0.01
+          mode: box
+    sugar_g:
+      selector:
+        number:
+          min: 0
+          max: 1000000
+          step: 0.01
+          mode: box
+    fiber_g:
+      selector:
+        number:
+          min: 0
+          max: 1000000
+          step: 0.01
+          mode: box
+    salt_g:
+      selector:
+        number:
+          min: 0
+          max: 1000000
+          step: 0.01
+          mode: box
+    note:
+      selector:
+        text: {}
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+refresh:
+  fields:
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
+sync_bring:
+  fields:
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi

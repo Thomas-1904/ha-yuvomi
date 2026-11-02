@@ -1,0 +1,17 @@
+{
+  "domain": "yuvomi",
+  "name": "Yuvomi (Community)",
+  "codeowners": [
+    "@Thomas-1904"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "webhook"
+  ],
+  "documentation": "https://github.com/Thomas-1904/ha-yuvomi",
+  "integration_type": "service",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/Thomas-1904/ha-yuvomi/issues",
+  "requirements": [],
+  "version": "0.5.1"
+}
