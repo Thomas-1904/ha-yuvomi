@@ -1,4 +1,4 @@
-<img src="brand/icon.png" alt="" width="96" align="right">
+<img src="brand/yuvomi-icon.png" alt="" width="96" align="right">
 
 # Yuvomi für Home Assistant
 
