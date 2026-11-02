@@ -77,7 +77,7 @@ async def test_setup_and_cleaning_plan_todo(hass):
         await hass.services.async_call(
             "todo", "add_item", {"entity_id": todo, "item": "Kühlschrank", "description": "Küche · 14"}, blocking=True
         )
-    assert ("POST", "/api/v1/housekeeping/decay-tasks/1/complete", None) in fake.calls
+    assert ("POST", "/api/v1/housekeeping/decay-tasks/1/complete", {}) in fake.calls
     assert ("POST", "/api/v1/housekeeping/decay-tasks", {"name": "Kühlschrank", "frequency_days": 14, "area": "Küche"}) in fake.calls
 
 
