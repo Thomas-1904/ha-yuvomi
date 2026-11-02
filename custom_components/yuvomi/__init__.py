@@ -10,6 +10,7 @@ from aiohttp import web
 from homeassistant.components import webhook
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_TOKEN, CONF_URL
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv, entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -128,7 +129,7 @@ async def _ensure_push_channel(hass: HomeAssistant, client: YuvomiClient, wid: s
     try:
         base = get_url(hass, allow_external=False, allow_cloud=False, prefer_external=False)
     except NoURLAvailableError:
-        _LOGGER.warning("Keine interne HA-Adresse – Yuvomi-Push nicht eingerichtet")
+        _LOGGER.warning("Yuvomi notification channel not set up: no Home Assistant URL configured")
         return
     urls = [f"{base}/api/webhook/{wid}"]
     try:
@@ -140,7 +141,7 @@ async def _ensure_push_channel(hass: HomeAssistant, client: YuvomiClient, wid: s
     try:
         channels = as_list(await client.get("/api/v1/notifications/channels"))
     except YuvomiError as err:
-        _LOGGER.warning("Yuvomi-Push nicht eingerichtet: %s", err)
+        _LOGGER.warning("Yuvomi notification channel not set up: %s", err)
         return
     mine = next((c for c in channels if c.get("provider") == "webhook" and c.get("name") == PUSH_CHANNEL_NAME), None)
     if mine is not None and (mine.get("config") or {}).get("baseUrl") in urls and mine.get("enabled"):
@@ -153,11 +154,11 @@ async def _ensure_push_channel(hass: HomeAssistant, client: YuvomiClient, wid: s
                 await client.post("/api/v1/notifications/channels", body)
             else:
                 await client.put(f"/api/v1/notifications/channels/{mine['id']}", body)
-            _LOGGER.info("Yuvomi-Webhook-Kanal eingerichtet: %s", url.split("/api/webhook/")[0])
+            _LOGGER.info("Yuvomi notification channel set up: %s", url.split("/api/webhook/")[0])
             return
         except YuvomiError as err:
             last_err = err
-    _LOGGER.warning("Yuvomi-Push nicht eingerichtet: %s", last_err)
+    _LOGGER.warning("Yuvomi notification channel not set up: %s", last_err)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: YuvomiConfigEntry) -> bool:
@@ -187,6 +188,7 @@ def _make_webhook_handler(entry_id: str):
         except ValueError:
             payload = {"text": await request.text()}
         hass.bus.async_fire(EVENT_WEBHOOK, {"entry_id": entry_id, "data": payload})
+        async_dispatcher_send(hass, f"{DOMAIN}_webhook_{entry_id}", payload)
         entry = hass.config_entries.async_get_entry(entry_id)
         if entry and isinstance(getattr(entry, "runtime_data", None), YuvomiCoordinator):
             # Sofort antworten – Yuvomi bricht sonst nach wenigen Sekunden ab.

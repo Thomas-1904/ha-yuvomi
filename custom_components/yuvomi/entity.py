@@ -28,7 +28,7 @@ class YuvomiEntity(CoordinatorEntity[YuvomiCoordinator]):
             identifiers={(DOMAIN, entry.entry_id)},
             name="Yuvomi",
             manufacturer=MANUFACTURER,
-            model="Familienplaner",
+            model="Family planner",
             sw_version=coordinator.data.version if coordinator.data else None,
             configuration_url=coordinator.client.base_url,
             entry_type=DeviceEntryType.SERVICE,

@@ -59,3 +59,12 @@ def check_compat(info: dict[str, Any]) -> str:
     if version and _ver(version) < _ver(MIN_APP_VERSION):
         return "too_old"
     return "legacy"
+
+
+def is_de(hass: Any) -> bool:
+    """Home Assistant runs in German – for the few names built at runtime (not translatable)."""
+    return str(getattr(getattr(hass, "config", None), "language", "") or "").lower().startswith("de")
+
+
+def txt(hass: Any, de: str, en: str) -> str:
+    return de if is_de(hass) else en

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import date, datetime, time
 import logging
+import re
 from typing import Any
 
 from homeassistant.components.todo import (
@@ -23,7 +24,7 @@ from .api import YuvomiError
 from .const import DOMAIN
 from .coordinator import YuvomiCoordinator, parse_date
 from .entity import YuvomiEntity, module_available, unique_prefix
-from .util import rrule_text
+from .util import rrule_text, txt
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -58,6 +59,8 @@ async def async_setup_entry(
         entities.append(YuvomiTasksTodo(coordinator))
     if module_available(coordinator, "pantry"):
         entities.append(YuvomiPantryTodo(coordinator))
+    if module_available(coordinator, "housekeeping"):
+        entities.append(YuvomiHousekeepingTodo(coordinator))
     async_add_entities(entities)
 
     @callback
@@ -89,7 +92,7 @@ async def async_setup_entry(
 
 
 def _raise(err: YuvomiError) -> None:
-    raise HomeAssistantError(f"Yuvomi: {err}") from err
+    raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
 
 
 class YuvomiTasksTodo(YuvomiEntity, TodoListEntity):
@@ -218,7 +221,7 @@ class YuvomiTasksTodo(YuvomiEntity, TodoListEntity):
     async def async_update_todo_item(self, item: TodoItem) -> None:
         current = self._task(item.uid)
         if current is None:
-            raise HomeAssistantError("Aufgabe nicht gefunden")
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="task_not_found")
         client = self.coordinator.client
         new_status = "done" if item.status == TodoItemStatus.COMPLETED else "open"
         old_status = current.get("status")
@@ -354,7 +357,7 @@ class YuvomiShoppingTodo(YuvomiEntity, TodoListEntity):
     async def async_update_todo_item(self, item: TodoItem) -> None:
         current = next((i for i in self._items() if str(i.get("id")) == item.uid), None)
         if current is None:
-            raise HomeAssistantError("Artikel nicht gefunden")
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="item_not_found")
         name, qty = self._split(item.summary or "")
         body: dict[str, Any] = {}
         checked = item.status == TodoItemStatus.COMPLETED
@@ -481,6 +484,119 @@ class YuvomiPantryTodo(YuvomiEntity, TodoListEntity):
         try:
             for uid in uids:
                 await self.coordinator.client.delete(f"/api/v1/pantry/{uid}")
+        except YuvomiError as err:
+            _raise(err)
+        await self.coordinator.async_request_refresh()
+
+
+class YuvomiHousekeepingTodo(YuvomiEntity, TodoListEntity):
+    """Cleaning plan: every chore is an item, due chores are open.
+
+    Checking a due chore marks it as done in Yuvomi (it then reappears when it is due again).
+    New items: title = chore; description "area · 7" sets area and interval in days.
+    """
+
+    _attr_translation_key = "housekeeping"
+    _attr_icon = "mdi:broom"
+    _attr_supported_features = (
+        TodoListEntityFeature.CREATE_TODO_ITEM
+        | TodoListEntityFeature.UPDATE_TODO_ITEM
+        | TodoListEntityFeature.DELETE_TODO_ITEM
+        | TodoListEntityFeature.SET_DESCRIPTION_ON_ITEM
+    )
+
+    def __init__(self, coordinator: YuvomiCoordinator) -> None:
+        super().__init__(coordinator, "todo", "housekeeping")
+
+    def _due_ids(self) -> set[str]:
+        from .sensor import _housekeeping_due  # noqa: PLC0415
+
+        return {str(t.get("id")) for t in _housekeeping_due(self.coordinator.data)}
+
+    @staticmethod
+    def _interval(t: dict[str, Any]) -> Any:
+        return t.get("frequency_days") or t.get("interval_days") or t.get("decay_days")
+
+    def _describe(self, t: dict[str, Any]) -> str | None:
+        parts = []
+        if t.get("area"):
+            parts.append(str(t["area"]))
+        if (n := self._interval(t)) is not None:
+            parts.append(txt(self.hass, f"alle {n} Tage", f"every {n} days"))
+        return " · ".join(parts) or None
+
+    @property
+    def todo_items(self) -> list[TodoItem]:
+        due = self._due_ids()
+        out = []
+        for t in self.coordinator.data.housekeeping:
+            uid = str(t.get("id"))
+            out.append(
+                TodoItem(
+                    uid=uid,
+                    summary=t.get("name") or t.get("title") or "",
+                    status=TodoItemStatus.NEEDS_ACTION if uid in due else TodoItemStatus.COMPLETED,
+                    due=parse_date(t.get("due_date")),
+                    description=self._describe(t),
+                )
+            )
+        # due chores first, then by due date
+        out.sort(key=lambda i: (i.status != TodoItemStatus.NEEDS_ACTION, str(i.due or "9999")))
+        return out
+
+    @staticmethod
+    def parse_description(text: str | None) -> tuple[str | None, int | None]:
+        """'Bad · 7' / 'Bathroom · every 7 days' -> ('Bad', 7)."""
+        if not text:
+            return None, None
+        area: str | None = None
+        days: int | None = None
+        for part in (p.strip() for p in text.split("·")):
+            num = re.search(r"\d+", part)
+            if num and days is None:
+                days = int(num.group())
+            elif part and area is None:
+                area = part
+        return area, days
+
+    async def async_create_todo_item(self, item: TodoItem) -> None:
+        area, days = self.parse_description(item.description)
+        body: dict[str, Any] = {"name": (item.summary or "").strip(), "frequency_days": days or 7}
+        if area:
+            body["area"] = area
+        try:
+            await self.coordinator.client.post("/api/v1/housekeeping/decay-tasks", body)
+        except YuvomiError as err:
+            _raise(err)
+        await self.coordinator.async_request_refresh()
+
+    async def async_update_todo_item(self, item: TodoItem) -> None:
+        current = next(
+            (t for t in self.coordinator.data.housekeeping if str(t.get("id")) == item.uid), None
+        )
+        if current is None:
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="chore_not_found")
+        try:
+            body: dict[str, Any] = {}
+            if item.summary and item.summary != (current.get("name") or current.get("title")):
+                body["name"] = item.summary.strip()
+            if item.description != self._describe(current):
+                area, days = self.parse_description(item.description)
+                body["area"] = area
+                if days:
+                    body["frequency_days"] = days
+            if body:
+                await self.coordinator.client.patch(f"/api/v1/housekeeping/decay-tasks/{item.uid}", body)
+            if item.status == TodoItemStatus.COMPLETED and item.uid in self._due_ids():
+                await self.coordinator.client.post(f"/api/v1/housekeeping/decay-tasks/{item.uid}/complete")
+        except YuvomiError as err:
+            _raise(err)
+        await self.coordinator.async_request_refresh()
+
+    async def async_delete_todo_items(self, uids: list[str]) -> None:
+        try:
+            for uid in uids:
+                await self.coordinator.client.delete(f"/api/v1/housekeeping/decay-tasks/{uid}")
         except YuvomiError as err:
             _raise(err)
         await self.coordinator.async_request_refresh()

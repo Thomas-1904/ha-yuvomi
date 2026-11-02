@@ -127,7 +127,7 @@ class YuvomiCoordinator(DataUpdateCoordinator[YuvomiData]):
             if err.status in (403, 404):
                 if data.modules_ok.get(key) is not True:
                     data.modules_ok[key] = False
-                _LOGGER.debug("Yuvomi %s nicht verfügbar (%s)", path, err.status)
+                _LOGGER.debug("Yuvomi %s not available (%s)", path, err.status)
                 return None
             raise
         data.modules_ok[key] = True
@@ -282,7 +282,7 @@ class YuvomiCoordinator(DataUpdateCoordinator[YuvomiData]):
         except YuvomiAuthError as err:
             raise ConfigEntryAuthFailed(str(err)) from err
         except YuvomiError as err:
-            raise UpdateFailed(f"Yuvomi nicht erreichbar: {err}") from err
+            raise UpdateFailed(f"Yuvomi not reachable: {err}") from err
 
         if self._last is not None and self.fire_events:
             self._fire_changes(prev, d)

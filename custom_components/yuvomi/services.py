@@ -31,7 +31,7 @@ def _coordinator(hass: HomeAssistant, call: ServiceCall) -> YuvomiCoordinator:
     if wanted:
         entries = [e for e in entries if e.entry_id == wanted]
     if not entries:
-        raise ServiceValidationError("Keine eingerichtete Yuvomi-Instanz gefunden")
+        raise ServiceValidationError(translation_domain=DOMAIN, translation_key="no_instance")
     return entries[0].runtime_data
 
 
@@ -39,7 +39,7 @@ async def _run(c: YuvomiCoordinator, method: str, path: str, body: Any = None, p
     try:
         result = await c.client.request(method, path, json=body, params=params)
     except YuvomiError as err:
-        raise HomeAssistantError(f"Yuvomi: {err}") from err
+        raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
     await c.async_request_refresh()
     return result
 
@@ -53,12 +53,12 @@ def _resp(call: ServiceCall, result: Any) -> ServiceResponse:
 
 def _path(template: str, call: ServiceCall, need_id: bool) -> str:
     if not template:
-        raise ServiceValidationError("Diese Aktion bietet Yuvomi für die Ressource nicht an")
+        raise ServiceValidationError(translation_domain=DOMAIN, translation_key="action_not_supported")
     values = {"id": call.data.get("id"), "parent_id": call.data.get("parent_id")}
     if need_id and values["id"] is None:
-        raise ServiceValidationError("id fehlt")
+        raise ServiceValidationError(translation_domain=DOMAIN, translation_key="id_missing")
     if "{parent_id}" in template and values["parent_id"] is None:
-        raise ServiceValidationError("parent_id fehlt (z. B. Listen-, Gruppen- oder Kredit-ID)")
+        raise ServiceValidationError(translation_domain=DOMAIN, translation_key="parent_id_missing")
     return template.format(id=values["id"] or "", parent_id=values["parent_id"] or "")
 
 
@@ -66,7 +66,7 @@ def _first_list(c: YuvomiCoordinator, list_id: Any) -> Any:
     if list_id is not None:
         return list_id
     if not c.data.shopping_lists:
-        raise ServiceValidationError("Keine Einkaufsliste vorhanden")
+        raise ServiceValidationError(translation_domain=DOMAIN, translation_key="no_shopping_list")
     return c.data.shopping_lists[0]["id"]
 
 
@@ -83,7 +83,7 @@ def register_services(hass: HomeAssistant) -> None:
         c = _coordinator(hass, call)
         path = call.data["path"]
         if not path.startswith("/api/v1/"):
-            raise ServiceValidationError("Pfad muss mit /api/v1/ beginnen (nur die öffentliche, stabile API)")
+            raise ServiceValidationError(translation_domain=DOMAIN, translation_key="path_not_v1")
         return _resp(call, await _run(c, call.data["method"], path, call.data.get("body"), call.data.get("params")))
 
     async def create(call: ServiceCall) -> ServiceResponse:
@@ -98,7 +98,7 @@ def register_services(hass: HomeAssistant) -> None:
         try:
             result = await c.client.get(path, params=call.data.get("params"))
         except YuvomiError as err:
-            raise HomeAssistantError(f"Yuvomi: {err}") from err
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
         data = unwrap(result)
         return data if isinstance(data, dict) else {"data": data}
 
@@ -106,7 +106,7 @@ def register_services(hass: HomeAssistant) -> None:
         c = _coordinator(hass, call)
         _, _, one, method = RESOURCES[call.data["resource"]]
         if not method:
-            raise ServiceValidationError("Diese Ressource kann in Yuvomi nicht geändert werden")
+            raise ServiceValidationError(translation_domain=DOMAIN, translation_key="not_updatable")
         path = _path(one, call, True)
         body = dict(call.data.get("data") or {})
         if method == "PUT" and call.data.get("merge", True):
@@ -330,7 +330,7 @@ def register_services(hass: HomeAssistant) -> None:
             await _run(c, "POST", f"/api/v1/health/logs/{log_id}/{action}", body)
             return
         if "medication_id" not in call.data:
-            raise ServiceValidationError("log_id oder medication_id angeben")
+            raise ServiceValidationError(translation_domain=DOMAIN, translation_key="log_or_medication")
         body = {"status": "taken" if action == "take" else "skipped", "taken_at": dt_util.now().strftime("%Y-%m-%dT%H:%M")}
         if "stock_deduct" in call.data and action == "take":
             body["stock_deduct"] = call.data["stock_deduct"]
@@ -369,7 +369,7 @@ def register_services(hass: HomeAssistant) -> None:
         c = _coordinator(hass, call)
         sync = getattr(c, "bring_sync", None)
         if sync is None:
-            raise ServiceValidationError("Kein Bring-Abgleich eingerichtet (Yuvomi → Konfigurieren → Bring-Liste)")
+            raise ServiceValidationError(translation_domain=DOMAIN, translation_key="no_bring_sync")
         return {"ergebnis": await sync.async_sync()}
 
     reg("sync_bring", sync_bring, {}, OPT)

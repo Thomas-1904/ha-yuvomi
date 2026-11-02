@@ -25,7 +25,7 @@ SUPPORTED_CLIENT_API = 1
 MIN_APP_VERSION = "2.79.0"
 EXPERIMENTAL = {"waste", "budget", "loans", "split", "rewards", "notes", "contacts", "documents", "schedule", "health"}
 
-PLATFORMS = ["binary_sensor", "button", "calendar", "sensor", "todo"]
+PLATFORMS = ["binary_sensor", "button", "calendar", "event", "sensor", "todo"]
 
 # Module, die einzeln aktiviert werden können: Schlüssel -> (Name, Standard an?)
 MODULES: dict[str, tuple[str, bool]] = {

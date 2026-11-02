@@ -23,6 +23,14 @@
         "data": {
           "token": "API-Token"
         }
+      },
+      "reconfigure": {
+        "title": "Reconfigure Yuvomi",
+        "description": "Change the address of your Yuvomi instance. Leave the token empty to keep the current one.",
+        "data": {
+          "url": "URL",
+          "token": "New API token (optional)"
+        }
       }
     },
     "error": {
@@ -34,7 +42,8 @@
     },
     "abort": {
       "already_configured": "Already configured",
-      "reauth_successful": "Token updated"
+      "reauth_successful": "Token updated",
+      "reconfigure_successful": "Configuration updated"
     }
   },
   "options": {
@@ -56,26 +65,26 @@
   "selector": {
     "modules": {
       "options": {
-        "tasks": "Aufgaben",
-        "shopping": "Einkaufslisten",
-        "calendar": "Familienkalender",
-        "meals": "Essensplan",
-        "recipes": "Rezepte",
-        "pantry": "Vorrat",
-        "inventory": "Inventar & Wartung",
-        "housekeeping": "Putzplan & Haushaltshilfe",
-        "waste": "Müllabfuhr",
-        "birthdays": "Geburtstage",
-        "budget": "Budget, Konten & Abos",
-        "loans": "Kredite",
-        "split": "Geteilte Ausgaben",
-        "rewards": "Belohnungen & Taschengeld",
-        "reminders": "Erinnerungen",
-        "notes": "Notizen",
-        "contacts": "Kontakte",
-        "documents": "Dokumente (Fristen)",
-        "schedule": "Schichtplan",
-        "health": "Gesundheit (Medikamente, Vitalwerte, Vorsorge)"
+        "tasks": "Tasks",
+        "shopping": "Shopping lists",
+        "calendar": "Family calendar",
+        "meals": "Meal plan",
+        "recipes": "Recipes",
+        "pantry": "Pantry",
+        "inventory": "Inventory & maintenance",
+        "housekeeping": "Cleaning plan & housekeeper",
+        "waste": "Waste collection (experimental)",
+        "birthdays": "Birthdays",
+        "budget": "Budget, accounts & subscriptions (experimental)",
+        "loans": "Loans (experimental)",
+        "split": "Shared expenses (experimental)",
+        "rewards": "Rewards & pocket money (experimental)",
+        "reminders": "Reminders",
+        "notes": "Notes (experimental)",
+        "contacts": "Contacts (experimental)",
+        "documents": "Documents – deadlines (experimental)",
+        "schedule": "Shift schedule (experimental)",
+        "health": "Health – medications, vitals, prevention (experimental)"
       }
     }
   },
@@ -86,6 +95,9 @@
       },
       "pantry": {
         "name": "Pantry"
+      },
+      "housekeeping": {
+        "name": "Cleaning plan"
       }
     },
     "calendar": {
@@ -110,34 +122,41 @@
     },
     "sensor": {
       "tasks_open": {
-        "name": "Open tasks"
+        "name": "Open tasks",
+        "unit_of_measurement": "tasks"
       },
       "tasks_overdue": {
-        "name": "Overdue tasks"
+        "name": "Overdue tasks",
+        "unit_of_measurement": "tasks"
       },
       "tasks_done_today": {
-        "name": "Done today"
+        "name": "Done today",
+        "unit_of_measurement": "tasks"
       },
       "meal_today": {
         "name": "Meal today"
       },
       "shopping_open": {
-        "name": "Shopping open"
+        "name": "Shopping open",
+        "unit_of_measurement": "items"
       },
       "waste_next": {
         "name": "Next waste collection"
       },
       "pantry_expiring": {
-        "name": "Pantry expiring"
+        "name": "Pantry expiring",
+        "unit_of_measurement": "items"
       },
       "events_upcoming": {
-        "name": "Upcoming events"
+        "name": "Upcoming events",
+        "unit_of_measurement": "events"
       },
       "birthday_next": {
         "name": "Next birthday"
       },
       "housekeeping_due": {
-        "name": "Chores due"
+        "name": "Chores due",
+        "unit_of_measurement": "tasks"
       },
       "budget_expenses": {
         "name": "Expenses this month"
@@ -149,16 +168,20 @@
         "name": "Webhook"
       },
       "pantry_items": {
-        "name": "Pantry items"
+        "name": "Pantry items",
+        "unit_of_measurement": "items"
       },
       "pantry_low": {
-        "name": "Pantry low"
+        "name": "Pantry low",
+        "unit_of_measurement": "items"
       },
       "recipes": {
-        "name": "Recipes"
+        "name": "Recipes",
+        "unit_of_measurement": "recipes"
       },
       "inventory_items": {
-        "name": "Inventory"
+        "name": "Inventory",
+        "unit_of_measurement": "items"
       },
       "subscriptions_monthly": {
         "name": "Subscriptions per month"
@@ -170,28 +193,35 @@
         "name": "Split balance"
       },
       "rewards_pending": {
-        "name": "Pending redemptions"
+        "name": "Pending redemptions",
+        "unit_of_measurement": "requests"
       },
       "reminders_pending": {
-        "name": "Pending reminders"
+        "name": "Pending reminders",
+        "unit_of_measurement": "reminders"
       },
       "notes_pinned": {
-        "name": "Pinned notes"
+        "name": "Pinned notes",
+        "unit_of_measurement": "notes"
       },
       "contacts": {
-        "name": "Contacts"
+        "name": "Contacts",
+        "unit_of_measurement": "contacts"
       },
       "documents_expiring": {
-        "name": "Documents expiring"
+        "name": "Documents expiring",
+        "unit_of_measurement": "documents"
       },
       "shifts_today": {
         "name": "Shifts today"
       },
       "meds_due": {
-        "name": "Medications"
+        "name": "Medications",
+        "unit_of_measurement": "medications"
       },
       "prevention_due": {
-        "name": "Prevention due"
+        "name": "Prevention due",
+        "unit_of_measurement": "events"
       },
       "weight": {
         "name": "Weight"
@@ -203,16 +233,20 @@
         "name": "Calories today"
       },
       "tasks_done_week": {
-        "name": "Done this week"
+        "name": "Done this week",
+        "unit_of_measurement": "tasks"
       },
       "tasks_done_month": {
-        "name": "Done 30 days"
+        "name": "Done 30 days",
+        "unit_of_measurement": "tasks"
       },
       "tasks_streak": {
-        "name": "Completion streak"
+        "name": "Completion streak",
+        "unit_of_measurement": "days"
       },
       "tasks_recurring": {
-        "name": "Recurring tasks"
+        "name": "Recurring tasks",
+        "unit_of_measurement": "series"
       },
       "bring_sync": {
         "name": "Bring sync"
@@ -242,19 +276,31 @@
       "refresh": {
         "name": "Refresh"
       }
+    },
+    "event": {
+      "notification": {
+        "name": "Notification",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "notification": "Notification"
+            }
+          }
+        }
+      }
     }
   },
   "services": {
     "api_request": {
-      "name": "API-Aufruf",
-      "description": "Ruft einen beliebigen Endpunkt auf.",
+      "name": "API call",
+      "description": "Calls any /api/v1 endpoint directly. Escape hatch – only what is in Yuvomi's OpenAPI specification is a stable contract.",
       "fields": {
         "path": {
-          "name": "Pfad (/api/v1/…)",
+          "name": "Path (/api/v1/…)",
           "description": ""
         },
         "method": {
-          "name": "Methode",
+          "name": "Method",
           "description": ""
         },
         "body": {
@@ -262,7 +308,7 @@
           "description": ""
         },
         "params": {
-          "name": "Query-Parameter",
+          "name": "Query parameters",
           "description": ""
         },
         "config_entry_id": {
@@ -272,19 +318,19 @@
       }
     },
     "create": {
-      "name": "Anlegen",
-      "description": "Legt ein Objekt jeder Yuvomi-Ressource an.",
+      "name": "Create",
+      "description": "Creates an object of any Yuvomi resource.",
       "fields": {
         "resource": {
-          "name": "Ressource",
+          "name": "Resource",
           "description": ""
         },
         "parent_id": {
-          "name": "Übergeordnete ID (Liste, Gruppe, Kredit …)",
+          "name": "Parent ID (list, group, loan …)",
           "description": ""
         },
         "data": {
-          "name": "Felder (JSON)",
+          "name": "Fields (JSON)",
           "description": ""
         },
         "config_entry_id": {
@@ -294,23 +340,23 @@
       }
     },
     "get": {
-      "name": "Abrufen",
-      "description": "Liest ein Objekt oder eine Liste.",
+      "name": "Get",
+      "description": "Reads an object or a list.",
       "fields": {
         "resource": {
-          "name": "Ressource",
+          "name": "Resource",
           "description": ""
         },
         "id": {
-          "name": "ID (leer = Liste)",
+          "name": "ID (empty = list)",
           "description": ""
         },
         "parent_id": {
-          "name": "Übergeordnete ID",
+          "name": "Parent ID (list, group, loan …)",
           "description": ""
         },
         "params": {
-          "name": "Query-Parameter",
+          "name": "Query parameters",
           "description": ""
         },
         "config_entry_id": {
@@ -320,11 +366,11 @@
       }
     },
     "update": {
-      "name": "Ändern",
-      "description": "Ändert ein Objekt (nur angegebene Felder).",
+      "name": "Update",
+      "description": "Updates an object (only the given fields).",
       "fields": {
         "resource": {
-          "name": "Ressource",
+          "name": "Resource",
           "description": ""
         },
         "id": {
@@ -332,15 +378,15 @@
           "description": ""
         },
         "parent_id": {
-          "name": "Übergeordnete ID",
+          "name": "Parent ID (list, group, loan …)",
           "description": ""
         },
         "data": {
-          "name": "Geänderte Felder (JSON)",
+          "name": "Changed fields (JSON)",
           "description": ""
         },
         "merge": {
-          "name": "Mit aktuellem Stand zusammenführen",
+          "name": "Merge with current record",
           "description": ""
         },
         "config_entry_id": {
@@ -350,11 +396,11 @@
       }
     },
     "delete": {
-      "name": "Löschen",
-      "description": "Löscht ein Objekt.",
+      "name": "Delete",
+      "description": "Deletes an object.",
       "fields": {
         "resource": {
-          "name": "Ressource",
+          "name": "Resource",
           "description": ""
         },
         "id": {
@@ -362,11 +408,11 @@
           "description": ""
         },
         "parent_id": {
-          "name": "Übergeordnete ID",
+          "name": "Parent ID (list, group, loan …)",
           "description": ""
         },
         "params": {
-          "name": "Query-Parameter",
+          "name": "Query parameters",
           "description": ""
         },
         "config_entry_id": {
@@ -376,39 +422,39 @@
       }
     },
     "add_task": {
-      "name": "Aufgabe anlegen",
-      "description": "Legt eine Aufgabe an.",
+      "name": "Add task",
+      "description": "Creates a task.",
       "fields": {
         "title": {
-          "name": "Titel",
+          "name": "Title",
           "description": ""
         },
         "description": {
-          "name": "Beschreibung",
+          "name": "Description",
           "description": ""
         },
         "due_date": {
-          "name": "Fällig",
+          "name": "Due",
           "description": ""
         },
         "assigned_to": {
-          "name": "Zuweisen (Benutzer-IDs)",
+          "name": "Assign to (user IDs)",
           "description": ""
         },
         "priority": {
-          "name": "Priorität",
+          "name": "Priority",
           "description": ""
         },
         "category": {
-          "name": "Kategorie",
+          "name": "Category",
           "description": ""
         },
         "points": {
-          "name": "Punkte",
+          "name": "Points",
           "description": ""
         },
         "visibility": {
-          "name": "Sichtbarkeit",
+          "name": "Visibility",
           "description": ""
         },
         "recurrence": {
@@ -426,15 +472,15 @@
       }
     },
     "complete_task": {
-      "name": "Aufgabenstatus",
-      "description": "Setzt den Status, optional mit „erledigt von“.",
+      "name": "Set task status",
+      "description": "Sets the status, optionally with \"done by\".",
       "fields": {
         "task_id": {
-          "name": "Aufgaben-ID",
+          "name": "Task ID",
           "description": ""
         },
         "done_by_user_id": {
-          "name": "Erledigt von (Benutzer-ID)",
+          "name": "Done by (user ID)",
           "description": ""
         },
         "status": {
@@ -448,27 +494,27 @@
       }
     },
     "add_shopping_item": {
-      "name": "Artikel auf Einkaufsliste",
-      "description": "Setzt einen Artikel auf eine Liste.",
+      "name": "Add shopping item",
+      "description": "Puts an item on a shopping list.",
       "fields": {
         "name": {
           "name": "Name",
           "description": ""
         },
         "list_id": {
-          "name": "Listen-ID (leer = erste)",
+          "name": "List ID (empty = first)",
           "description": ""
         },
         "quantity": {
-          "name": "Menge",
+          "name": "Quantity",
           "description": ""
         },
         "category": {
-          "name": "Kategorie",
+          "name": "Category",
           "description": ""
         },
         "notes": {
-          "name": "Notiz",
+          "name": "Note",
           "description": ""
         },
         "config_entry_id": {
@@ -478,11 +524,11 @@
       }
     },
     "clear_checked": {
-      "name": "Erledigte Artikel löschen",
-      "description": "Entfernt abgehakte Artikel.",
+      "name": "Clear checked items",
+      "description": "Removes checked items from a list.",
       "fields": {
         "list_id": {
-          "name": "Listen-ID",
+          "name": "List ID",
           "description": ""
         },
         "config_entry_id": {
@@ -492,31 +538,31 @@
       }
     },
     "add_meal": {
-      "name": "Essen planen",
-      "description": "Trägt ein Essen ein.",
+      "name": "Plan meal",
+      "description": "Adds a meal to the meal plan.",
       "fields": {
         "date": {
-          "name": "Datum",
+          "name": "Date",
           "description": ""
         },
         "title": {
-          "name": "Titel",
+          "name": "Title",
           "description": ""
         },
         "meal_type": {
-          "name": "Mahlzeit",
+          "name": "Meal",
           "description": ""
         },
         "notes": {
-          "name": "Notiz",
+          "name": "Note",
           "description": ""
         },
         "recipe_id": {
-          "name": "Rezept-ID",
+          "name": "Recipe ID",
           "description": ""
         },
         "cook_user_id": {
-          "name": "Koch (Benutzer-ID)",
+          "name": "Cook (user ID)",
           "description": ""
         },
         "config_entry_id": {
@@ -526,19 +572,19 @@
       }
     },
     "meals_to_shopping": {
-      "name": "Zutaten auf Einkaufsliste",
-      "description": "Übernimmt Zutaten eines Zeitraums.",
+      "name": "Ingredients to shopping list",
+      "description": "Adds the ingredients of a date range to a shopping list.",
       "fields": {
         "from_date": {
-          "name": "Von",
+          "name": "From",
           "description": ""
         },
         "to_date": {
-          "name": "Bis",
+          "name": "To",
           "description": ""
         },
         "list_id": {
-          "name": "Listen-ID",
+          "name": "List ID",
           "description": ""
         },
         "config_entry_id": {
@@ -548,11 +594,11 @@
       }
     },
     "pantry_to_shopping": {
-      "name": "Knappen Vorrat auf Liste",
-      "description": "Setzt leere/knappe Vorräte auf die Liste.",
+      "name": "Low pantry to shopping list",
+      "description": "Puts empty or low pantry items on a shopping list.",
       "fields": {
         "list_id": {
-          "name": "Listen-ID",
+          "name": "List ID",
           "description": ""
         },
         "config_entry_id": {
@@ -562,11 +608,11 @@
       }
     },
     "shopping_to_pantry": {
-      "name": "Gekauftes in den Vorrat",
-      "description": "Übernimmt abgehakte Artikel in den Vorrat.",
+      "name": "Purchases to pantry",
+      "description": "Moves checked shopping items into the pantry.",
       "fields": {
         "list_id": {
-          "name": "Listen-ID",
+          "name": "List ID",
           "description": ""
         },
         "config_entry_id": {
@@ -576,11 +622,11 @@
       }
     },
     "complete_housekeeping": {
-      "name": "Putzaufgabe erledigt",
-      "description": "Markiert eine Putzaufgabe als erledigt.",
+      "name": "Chore done",
+      "description": "Marks a cleaning-plan chore as done.",
       "fields": {
         "task_id": {
-          "name": "Aufgaben-ID",
+          "name": "Task ID",
           "description": ""
         },
         "config_entry_id": {
@@ -590,19 +636,19 @@
       }
     },
     "housekeeper_check": {
-      "name": "Haushaltshilfe ein-/auschecken",
-      "description": "Check-in oder Check-out.",
+      "name": "Housekeeper check-in/out",
+      "description": "Checks the housekeeper in or out.",
       "fields": {
         "direction": {
-          "name": "Richtung (in/out)",
+          "name": "Direction (in/out)",
           "description": ""
         },
         "worker_id": {
-          "name": "Person-ID",
+          "name": "Person ID",
           "description": ""
         },
         "extras": {
-          "name": "Extras (Betrag)",
+          "name": "Extras (amount)",
           "description": ""
         },
         "config_entry_id": {
@@ -612,27 +658,27 @@
       }
     },
     "complete_inventory_date": {
-      "name": "Wartung erledigt",
-      "description": "Schließt einen Wartungstermin ab.",
+      "name": "Maintenance done",
+      "description": "Completes a maintenance date.",
       "fields": {
         "item_id": {
-          "name": "Gegenstand-ID",
+          "name": "Item ID",
           "description": ""
         },
         "date_id": {
-          "name": "Termin-ID",
+          "name": "Date ID",
           "description": ""
         },
         "odometer": {
-          "name": "Kilometerstand",
+          "name": "Odometer",
           "description": ""
         },
         "vendor": {
-          "name": "Werkstatt",
+          "name": "Workshop / vendor",
           "description": ""
         },
         "note": {
-          "name": "Notiz",
+          "name": "Note",
           "description": ""
         },
         "config_entry_id": {
@@ -642,39 +688,39 @@
       }
     },
     "add_budget_entry": {
-      "name": "Buchung anlegen",
-      "description": "Bucht Ausgabe oder Einnahme.",
+      "name": "Add budget entry",
+      "description": "Books an expense or income.",
       "fields": {
         "title": {
-          "name": "Titel",
+          "name": "Title",
           "description": ""
         },
         "amount": {
-          "name": "Betrag",
+          "name": "Amount",
           "description": ""
         },
         "date": {
-          "name": "Datum",
+          "name": "Date",
           "description": ""
         },
         "entry_type": {
-          "name": "Art",
+          "name": "Type",
           "description": ""
         },
         "category": {
-          "name": "Kategorie",
+          "name": "Category",
           "description": ""
         },
         "subcategory": {
-          "name": "Unterkategorie",
+          "name": "Subcategory",
           "description": ""
         },
         "account_id": {
-          "name": "Konto-ID",
+          "name": "Account ID",
           "description": ""
         },
         "visibility": {
-          "name": "Sichtbarkeit",
+          "name": "Visibility",
           "description": ""
         },
         "config_entry_id": {
@@ -684,11 +730,11 @@
       }
     },
     "renew_subscription": {
-      "name": "Abo bezahlt",
-      "description": "Schaltet ein Abo weiter.",
+      "name": "Subscription paid",
+      "description": "Advances a subscription to its next period.",
       "fields": {
         "subscription_id": {
-          "name": "Abo-ID",
+          "name": "Subscription ID",
           "description": ""
         },
         "config_entry_id": {
@@ -698,19 +744,19 @@
       }
     },
     "loan_payment": {
-      "name": "Kreditrate buchen",
-      "description": "Bucht eine Rate.",
+      "name": "Book loan payment",
+      "description": "Books a loan instalment.",
       "fields": {
         "loan_id": {
-          "name": "Kredit-ID",
+          "name": "Loan ID",
           "description": ""
         },
         "paid_date": {
-          "name": "Datum",
+          "name": "Date",
           "description": ""
         },
         "amount": {
-          "name": "Betrag",
+          "name": "Amount",
           "description": ""
         },
         "config_entry_id": {
@@ -720,19 +766,19 @@
       }
     },
     "reward_bonus": {
-      "name": "Bonuspunkte",
-      "description": "Vergibt Punkte.",
+      "name": "Bonus points",
+      "description": "Awards points.",
       "fields": {
         "user_id": {
-          "name": "Benutzer-ID",
+          "name": "User ID",
           "description": ""
         },
         "points": {
-          "name": "Punkte",
+          "name": "Points",
           "description": ""
         },
         "reason": {
-          "name": "Grund",
+          "name": "Reason",
           "description": ""
         },
         "config_entry_id": {
@@ -742,15 +788,15 @@
       }
     },
     "redeem_reward": {
-      "name": "Belohnung einlösen",
-      "description": "Fordert eine Belohnung an.",
+      "name": "Redeem reward",
+      "description": "Requests a reward.",
       "fields": {
         "catalog_id": {
-          "name": "Belohnungs-ID",
+          "name": "Reward ID",
           "description": ""
         },
         "user_id": {
-          "name": "Für Benutzer-ID",
+          "name": "User ID",
           "description": ""
         },
         "config_entry_id": {
@@ -760,11 +806,11 @@
       }
     },
     "dismiss_reminder": {
-      "name": "Erinnerung erledigen",
-      "description": "Blendet eine Erinnerung aus.",
+      "name": "Dismiss reminder",
+      "description": "Dismisses a reminder.",
       "fields": {
         "reminder_id": {
-          "name": "Erinnerungs-ID",
+          "name": "Reminder ID",
           "description": ""
         },
         "config_entry_id": {
@@ -774,15 +820,15 @@
       }
     },
     "pin_note": {
-      "name": "Notiz anheften",
-      "description": "Heftet eine Notiz an oder ab.",
+      "name": "Pin note",
+      "description": "Pins or unpins a note.",
       "fields": {
         "note_id": {
-          "name": "Notiz-ID",
+          "name": "Note ID",
           "description": ""
         },
         "pinned": {
-          "name": "Angeheftet",
+          "name": "Pinned",
           "description": ""
         },
         "config_entry_id": {
@@ -792,19 +838,19 @@
       }
     },
     "check_note_item": {
-      "name": "Checklistenpunkt abhaken",
-      "description": "Hakt eine Zeile einer Notiz ab.",
+      "name": "Check note item",
+      "description": "Checks a line of a checklist note.",
       "fields": {
         "note_id": {
-          "name": "Notiz-ID",
+          "name": "Note ID",
           "description": ""
         },
         "line": {
-          "name": "Zeile",
+          "name": "Line",
           "description": ""
         },
         "checked": {
-          "name": "Abgehakt",
+          "name": "Checked",
           "description": ""
         },
         "config_entry_id": {
@@ -814,47 +860,47 @@
       }
     },
     "add_vital": {
-      "name": "Vitalwert eintragen",
-      "description": "Schreibt Gewicht, Blutdruck usw.",
+      "name": "Add vital",
+      "description": "Records weight, blood pressure etc.",
       "fields": {
         "type": {
-          "name": "Art (weight, bp, pulse …)",
+          "name": "Type (weight, bp, pulse …)",
           "description": ""
         },
         "value": {
-          "name": "Wert",
+          "name": "Value",
           "description": ""
         },
         "unit": {
-          "name": "Einheit",
+          "name": "Unit",
           "description": ""
         },
         "systolic": {
-          "name": "Systolisch",
+          "name": "Systolic",
           "description": ""
         },
         "diastolic": {
-          "name": "Diastolisch",
+          "name": "Diastolic",
           "description": ""
         },
         "pulse": {
-          "name": "Puls",
+          "name": "Pulse",
           "description": ""
         },
         "note": {
-          "name": "Notiz",
+          "name": "Note",
           "description": ""
         },
         "user_id": {
-          "name": "Für Benutzer-ID",
+          "name": "User ID",
           "description": ""
         },
         "visibility": {
-          "name": "Sichtbarkeit",
+          "name": "Visibility",
           "description": ""
         },
         "measured_at": {
-          "name": "Gemessen um",
+          "name": "Measured at",
           "description": ""
         },
         "config_entry_id": {
@@ -864,23 +910,23 @@
       }
     },
     "medication_dose": {
-      "name": "Medikament genommen",
-      "description": "Bestätigt oder überspringt eine Einnahme.",
+      "name": "Medication taken",
+      "description": "Confirms or skips a dose.",
       "fields": {
         "log_id": {
-          "name": "Einnahme-ID",
+          "name": "Dose ID",
           "description": ""
         },
         "medication_id": {
-          "name": "Medikament-ID (ungeplant)",
+          "name": "Medication ID (unscheduled)",
           "description": ""
         },
         "action": {
-          "name": "Aktion",
+          "name": "Action",
           "description": ""
         },
         "stock_deduct": {
-          "name": "Vom Vorrat abziehen",
+          "name": "Deduct from stock",
           "description": ""
         },
         "config_entry_id": {
@@ -890,15 +936,15 @@
       }
     },
     "add_nutrition": {
-      "name": "Ernährung eintragen",
-      "description": "Trägt eine Mahlzeit mit Nährwerten ein.",
+      "name": "Add nutrition",
+      "description": "Records a meal with nutrition values.",
       "fields": {
         "title": {
-          "name": "Titel",
+          "name": "Title",
           "description": ""
         },
         "meal_type": {
-          "name": "Mahlzeit",
+          "name": "Meal",
           "description": ""
         },
         "energy_kcal": {
@@ -906,31 +952,31 @@
           "description": ""
         },
         "protein_g": {
-          "name": "Eiweiß g",
+          "name": "Protein g",
           "description": ""
         },
         "carbs_g": {
-          "name": "Kohlenhydrate g",
+          "name": "Carbohydrates g",
           "description": ""
         },
         "fat_g": {
-          "name": "Fett g",
+          "name": "Fat g",
           "description": ""
         },
         "sugar_g": {
-          "name": "Zucker g",
+          "name": "Sugar g",
           "description": ""
         },
         "fiber_g": {
-          "name": "Ballaststoffe g",
+          "name": "Fibre g",
           "description": ""
         },
         "salt_g": {
-          "name": "Salz g",
+          "name": "Salt g",
           "description": ""
         },
         "note": {
-          "name": "Notiz",
+          "name": "Note",
           "description": ""
         },
         "config_entry_id": {
@@ -940,8 +986,8 @@
       }
     },
     "refresh": {
-      "name": "Neu laden",
-      "description": "Lädt alle Daten sofort neu.",
+      "name": "Refresh",
+      "description": "Reloads all data now.",
       "fields": {
         "config_entry_id": {
           "name": "Instance",
@@ -951,7 +997,7 @@
     },
     "sync_bring": {
       "name": "Sync Bring",
-      "description": "Sync the Yuvomi shopping list with Bring now.",
+      "description": "Syncs the Yuvomi shopping list with Bring now.",
       "fields": {
         "config_entry_id": {
           "name": "Yuvomi",
@@ -972,6 +1018,50 @@
     "newer_api": {
       "title": "Newer Yuvomi API",
       "description": "Yuvomi {version} reports API generation {api}; this integration only knows generation 1. It may work but is untested – please check for an integration update."
+    }
+  },
+  "exceptions": {
+    "api_error": {
+      "message": "Yuvomi: {error}"
+    },
+    "no_instance": {
+      "message": "No loaded Yuvomi instance found."
+    },
+    "action_not_supported": {
+      "message": "Yuvomi does not offer this action for the resource."
+    },
+    "id_missing": {
+      "message": "The id is missing."
+    },
+    "parent_id_missing": {
+      "message": "parent_id is missing (e.g. list, group or loan ID)."
+    },
+    "no_shopping_list": {
+      "message": "There is no shopping list in Yuvomi."
+    },
+    "path_not_v1": {
+      "message": "The path must start with /api/v1/ (public, stable API only)."
+    },
+    "not_updatable": {
+      "message": "This resource cannot be changed in Yuvomi."
+    },
+    "log_or_medication": {
+      "message": "Provide log_id or medication_id."
+    },
+    "no_bring_sync": {
+      "message": "No Bring sync configured (Yuvomi → Configure → Bring list)."
+    },
+    "task_not_found": {
+      "message": "Task not found."
+    },
+    "item_not_found": {
+      "message": "Item not found."
+    },
+    "no_open_visit": {
+      "message": "No open housekeeper visit."
+    },
+    "chore_not_found": {
+      "message": "Chore not found."
     }
   }
 }

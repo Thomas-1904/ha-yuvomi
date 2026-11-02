@@ -12,7 +12,9 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .api import YuvomiError
+from .const import DOMAIN
 from .coordinator import YuvomiCoordinator
+from .util import txt
 from .entity import YuvomiEntity, module_available
 
 
@@ -95,7 +97,7 @@ class YuvomiHousekeepingButton(YuvomiEntity, ButtonEntity):
     @property
     def name(self) -> str:
         t = self._task() or {}
-        return f"Erledigt: {t.get('name') or t.get('title') or self._task_id}"
+        return f"{txt(self.hass, 'Erledigt', 'Done')}: {t.get('name') or t.get('title') or self._task_id}"
 
     @property
     def available(self) -> bool:
@@ -112,7 +114,7 @@ class YuvomiHousekeepingButton(YuvomiEntity, ButtonEntity):
                 f"/api/v1/housekeeping/decay-tasks/{self._task_id}/complete"
             )
         except YuvomiError as err:
-            raise HomeAssistantError(f"Yuvomi: {err}") from err
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
         await self.coordinator.async_request_refresh()
 
 
@@ -130,7 +132,7 @@ class YuvomiRenewButton(YuvomiEntity, ButtonEntity):
 
     @property
     def name(self) -> str:
-        return f"Abo bezahlt: {(self._sub() or {}).get('name') or self._id}"
+        return f"{txt(self.hass, 'Abo bezahlt', 'Subscription paid')}: {(self._sub() or {}).get('name') or self._id}"
 
     @property
     def available(self) -> bool:
@@ -140,7 +142,7 @@ class YuvomiRenewButton(YuvomiEntity, ButtonEntity):
         try:
             await self.coordinator.client.post(f"/api/v1/budget/subscriptions/{self._id}/renew")
         except YuvomiError as err:
-            raise HomeAssistantError(f"Yuvomi: {err}") from err
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
         await self.coordinator.async_request_refresh()
 
 
@@ -164,7 +166,7 @@ class YuvomiInventoryDoneButton(YuvomiEntity, ButtonEntity):
     @property
     def name(self) -> str:
         nd = self._next_date() or {}
-        return f"Erledigt: {nd.get('label') or 'Wartung'} {(self._item() or {}).get('name') or ''}".strip()
+        return f"{txt(self.hass, 'Erledigt', 'Done')}: {nd.get('label') or txt(self.hass, 'Wartung', 'Maintenance')} {(self._item() or {}).get('name') or ''}".strip()
 
     @property
     def available(self) -> bool:
@@ -173,11 +175,11 @@ class YuvomiInventoryDoneButton(YuvomiEntity, ButtonEntity):
     async def async_press(self) -> None:
         nd = self._next_date()
         if not nd:
-            raise HomeAssistantError("Kein offener Termin")
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="no_open_visit")
         try:
             await self.coordinator.client.post(
                 f"/api/v1/inventory/items/{self._id}/dates/{nd.get('id')}/complete"
             )
         except YuvomiError as err:
-            raise HomeAssistantError(f"Yuvomi: {err}") from err
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
         await self.coordinator.async_request_refresh()

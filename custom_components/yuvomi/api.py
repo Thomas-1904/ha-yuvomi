@@ -128,22 +128,22 @@ class YuvomiClient:
                     msg = body.get("error") if isinstance(body, dict) else str(body)
                     reason = body.get("reason") if isinstance(body, dict) else None
                     if resp.status == 401:
-                        raise YuvomiAuthError(msg or "Nicht angemeldet")
-                    raise YuvomiApiError(resp.status, msg or "Keine Berechtigung", reason)
+                        raise YuvomiAuthError(msg or "Not authenticated")
+                    raise YuvomiApiError(resp.status, msg or "Permission denied", reason)
                 if resp.status == 429:
                     try:
                         retry = float(resp.headers.get("Retry-After", "30"))
                     except ValueError:
                         retry = 30.0
                     self._blocked_until = asyncio.get_running_loop().time() + min(max(retry, 1), 300)
-                    raise YuvomiApiError(429, f"Ratenlimit erreicht, Pause {int(retry)} s", "rate_limited")
+                    raise YuvomiApiError(429, f"Rate limit reached, pausing {int(retry)} s", "rate_limited")
                 if resp.status >= 400:
                     msg = body.get("error") if isinstance(body, dict) else str(body)
                     reason = body.get("reason") if isinstance(body, dict) else None
-                    raise YuvomiApiError(resp.status, msg or "Fehler", reason)
+                    raise YuvomiApiError(resp.status, msg or "Error", reason)
                 return body
         except (aiohttp.ClientConnectionError, asyncio.TimeoutError) as err:
-            raise YuvomiConnectionError(str(err) or "Zeitüberschreitung") from err
+            raise YuvomiConnectionError(str(err) or "Timeout") from err
 
     async def get(self, path: str, **kwargs: Any) -> Any:
         return await self.request("GET", path, **kwargs)

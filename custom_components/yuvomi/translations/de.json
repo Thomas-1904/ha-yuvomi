@@ -23,6 +23,14 @@
         "data": {
           "token": "API-Token"
         }
+      },
+      "reconfigure": {
+        "title": "Yuvomi neu konfigurieren",
+        "description": "Adresse der Yuvomi-Instanz ändern. Token leer lassen, um das bisherige zu behalten.",
+        "data": {
+          "url": "URL",
+          "token": "Neues API-Token (optional)"
+        }
       }
     },
     "error": {
@@ -34,7 +42,8 @@
     },
     "abort": {
       "already_configured": "Bereits eingerichtet",
-      "reauth_successful": "Token aktualisiert"
+      "reauth_successful": "Token aktualisiert",
+      "reconfigure_successful": "Einrichtung aktualisiert"
     }
   },
   "options": {
@@ -64,18 +73,18 @@
         "pantry": "Vorrat",
         "inventory": "Inventar & Wartung",
         "housekeeping": "Putzplan & Haushaltshilfe",
-        "waste": "Müllabfuhr",
+        "waste": "Müllabfuhr (experimentell)",
         "birthdays": "Geburtstage",
-        "budget": "Budget, Konten & Abos",
-        "loans": "Kredite",
-        "split": "Geteilte Ausgaben",
-        "rewards": "Belohnungen & Taschengeld",
+        "budget": "Budget, Konten & Abos (experimentell)",
+        "loans": "Kredite (experimentell)",
+        "split": "Geteilte Ausgaben (experimentell)",
+        "rewards": "Belohnungen & Taschengeld (experimentell)",
         "reminders": "Erinnerungen",
-        "notes": "Notizen",
-        "contacts": "Kontakte",
-        "documents": "Dokumente (Fristen)",
-        "schedule": "Schichtplan",
-        "health": "Gesundheit (Medikamente, Vitalwerte, Vorsorge)"
+        "notes": "Notizen (experimentell)",
+        "contacts": "Kontakte (experimentell)",
+        "documents": "Dokumente (Fristen) (experimentell)",
+        "schedule": "Schichtplan (experimentell)",
+        "health": "Gesundheit (Medikamente, Vitalwerte, Vorsorge) (experimentell)"
       }
     }
   },
@@ -86,6 +95,9 @@
       },
       "pantry": {
         "name": "Vorrat"
+      },
+      "housekeeping": {
+        "name": "Putzplan"
       }
     },
     "calendar": {
@@ -110,34 +122,41 @@
     },
     "sensor": {
       "tasks_open": {
-        "name": "Offene Aufgaben"
+        "name": "Offene Aufgaben",
+        "unit_of_measurement": "Aufgaben"
       },
       "tasks_overdue": {
-        "name": "Überfällige Aufgaben"
+        "name": "Überfällige Aufgaben",
+        "unit_of_measurement": "Aufgaben"
       },
       "tasks_done_today": {
-        "name": "Heute erledigt"
+        "name": "Heute erledigt",
+        "unit_of_measurement": "Aufgaben"
       },
       "meal_today": {
         "name": "Essen heute"
       },
       "shopping_open": {
-        "name": "Einkauf offen"
+        "name": "Einkauf offen",
+        "unit_of_measurement": "Artikel"
       },
       "waste_next": {
         "name": "Nächste Müllabfuhr"
       },
       "pantry_expiring": {
-        "name": "Vorrat läuft ab"
+        "name": "Vorrat läuft ab",
+        "unit_of_measurement": "Artikel"
       },
       "events_upcoming": {
-        "name": "Anstehende Termine"
+        "name": "Anstehende Termine",
+        "unit_of_measurement": "Termine"
       },
       "birthday_next": {
         "name": "Nächster Geburtstag"
       },
       "housekeeping_due": {
-        "name": "Putzaufgaben fällig"
+        "name": "Putzaufgaben fällig",
+        "unit_of_measurement": "Aufgaben"
       },
       "budget_expenses": {
         "name": "Ausgaben Monat"
@@ -149,16 +168,20 @@
         "name": "Webhook"
       },
       "pantry_items": {
-        "name": "Vorrat Artikel"
+        "name": "Vorrat Artikel",
+        "unit_of_measurement": "Artikel"
       },
       "pantry_low": {
-        "name": "Vorrat knapp"
+        "name": "Vorrat knapp",
+        "unit_of_measurement": "Artikel"
       },
       "recipes": {
-        "name": "Rezepte"
+        "name": "Rezepte",
+        "unit_of_measurement": "Rezepte"
       },
       "inventory_items": {
-        "name": "Inventar"
+        "name": "Inventar",
+        "unit_of_measurement": "Gegenstände"
       },
       "subscriptions_monthly": {
         "name": "Abos pro Monat"
@@ -170,28 +193,35 @@
         "name": "Geteilte Ausgaben Saldo"
       },
       "rewards_pending": {
-        "name": "Offene Einlösungen"
+        "name": "Offene Einlösungen",
+        "unit_of_measurement": "Anfragen"
       },
       "reminders_pending": {
-        "name": "Fällige Erinnerungen"
+        "name": "Fällige Erinnerungen",
+        "unit_of_measurement": "Erinnerungen"
       },
       "notes_pinned": {
-        "name": "Angeheftete Notizen"
+        "name": "Angeheftete Notizen",
+        "unit_of_measurement": "Notizen"
       },
       "contacts": {
-        "name": "Kontakte"
+        "name": "Kontakte",
+        "unit_of_measurement": "Kontakte"
       },
       "documents_expiring": {
-        "name": "Dokumente laufen ab"
+        "name": "Dokumente laufen ab",
+        "unit_of_measurement": "Dokumente"
       },
       "shifts_today": {
         "name": "Schichten heute"
       },
       "meds_due": {
-        "name": "Medikamente"
+        "name": "Medikamente",
+        "unit_of_measurement": "Medikamente"
       },
       "prevention_due": {
-        "name": "Vorsorge fällig"
+        "name": "Vorsorge fällig",
+        "unit_of_measurement": "Termine"
       },
       "weight": {
         "name": "Gewicht"
@@ -203,16 +233,20 @@
         "name": "Kalorien heute"
       },
       "tasks_done_week": {
-        "name": "Erledigt diese Woche"
+        "name": "Erledigt diese Woche",
+        "unit_of_measurement": "Aufgaben"
       },
       "tasks_done_month": {
-        "name": "Erledigt 30 Tage"
+        "name": "Erledigt 30 Tage",
+        "unit_of_measurement": "Aufgaben"
       },
       "tasks_streak": {
-        "name": "Erledigt-Serie"
+        "name": "Erledigt-Serie",
+        "unit_of_measurement": "Tage"
       },
       "tasks_recurring": {
-        "name": "Wiederkehrende Aufgaben"
+        "name": "Wiederkehrende Aufgaben",
+        "unit_of_measurement": "Serien"
       },
       "bring_sync": {
         "name": "Bring-Abgleich"
@@ -241,6 +275,18 @@
     "button": {
       "refresh": {
         "name": "Neu laden"
+      }
+    },
+    "event": {
+      "notification": {
+        "name": "Benachrichtigung",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "notification": "Benachrichtigung"
+            }
+          }
+        }
       }
     }
   },
@@ -972,6 +1018,50 @@
     "newer_api": {
       "title": "Neuere Yuvomi-Schnittstelle",
       "description": "Yuvomi {version} meldet die Schnittstellen-Generation {api}, diese Integration kennt nur Generation 1. Es kann funktionieren, ist aber nicht getestet – bitte nach einem Update der Integration schauen."
+    }
+  },
+  "exceptions": {
+    "api_error": {
+      "message": "Yuvomi: {error}"
+    },
+    "no_instance": {
+      "message": "Keine eingerichtete Yuvomi-Instanz gefunden."
+    },
+    "action_not_supported": {
+      "message": "Diese Aktion bietet Yuvomi für die Ressource nicht an."
+    },
+    "id_missing": {
+      "message": "Die id fehlt."
+    },
+    "parent_id_missing": {
+      "message": "parent_id fehlt (z. B. Listen-, Gruppen- oder Kredit-ID)."
+    },
+    "no_shopping_list": {
+      "message": "Es gibt keine Einkaufsliste in Yuvomi."
+    },
+    "path_not_v1": {
+      "message": "Der Pfad muss mit /api/v1/ beginnen (nur die öffentliche, stabile API)."
+    },
+    "not_updatable": {
+      "message": "Diese Ressource kann in Yuvomi nicht geändert werden."
+    },
+    "log_or_medication": {
+      "message": "log_id oder medication_id angeben."
+    },
+    "no_bring_sync": {
+      "message": "Kein Bring-Abgleich eingerichtet (Yuvomi → Konfigurieren → Bring-Liste)."
+    },
+    "task_not_found": {
+      "message": "Aufgabe nicht gefunden."
+    },
+    "item_not_found": {
+      "message": "Artikel nicht gefunden."
+    },
+    "no_open_visit": {
+      "message": "Kein offener Termin der Haushaltshilfe."
+    },
+    "chore_not_found": {
+      "message": "Putzaufgabe nicht gefunden."
     }
   }
 }

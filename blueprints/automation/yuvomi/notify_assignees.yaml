@@ -1,0 +1,102 @@
+blueprint:
+  name: Yuvomi – notifications to the assigned person
+  description: >
+    Forwards Yuvomi notifications (received via the Yuvomi notification channel / webhook)
+    to phones. If a notification belongs to a task, only the people assigned to that task
+    get it; everything else (events, birthdays, reminders, unassigned tasks) goes to everyone
+    configured below.
+
+    Names must match the Yuvomi member names (first name is enough).
+    Leave unused slots empty.
+  domain: automation
+  source_url: https://github.com/Thomas-1904/ha-yuvomi/blob/main/blueprints/automation/yuvomi/notify_assignees.yaml
+  input:
+    tasks_list:
+      name: Yuvomi task list
+      description: The to-do entity of the Yuvomi tasks.
+      selector:
+        entity:
+          filter:
+            - integration: yuvomi
+              domain: todo
+    person_1_name:
+      name: Person 1 – Yuvomi name
+      selector: {text: {}}
+    person_1_notify:
+      name: Person 1 – notify action
+      description: e.g. notify.mobile_app_pixel_8
+      selector: {text: {}}
+    person_2_name:
+      name: Person 2 – Yuvomi name
+      default: ""
+      selector: {text: {}}
+    person_2_notify:
+      name: Person 2 – notify action
+      default: ""
+      selector: {text: {}}
+    person_3_name:
+      name: Person 3 – Yuvomi name
+      default: ""
+      selector: {text: {}}
+    person_3_notify:
+      name: Person 3 – notify action
+      default: ""
+      selector: {text: {}}
+    click_url:
+      name: Open when tapped (optional)
+      description: Dashboard path that opens when the notification is tapped, e.g. /lovelace/0
+      default: ""
+      selector: {text: {}}
+
+mode: queued
+max: 20
+
+triggers:
+  - trigger: event
+    event_type: yuvomi_webhook
+    event_data:
+      data:
+        event: notification
+
+actions:
+  - variables:
+      tasks_list: !input tasks_list
+      click_url: !input click_url
+      people:
+        - name: !input person_1_name
+          notify: !input person_1_notify
+        - name: !input person_2_name
+          notify: !input person_2_notify
+        - name: !input person_3_name
+          notify: !input person_3_notify
+      n: "{{ trigger.event.data.data.notification | default({}) }}"
+  - variables:
+      task_id: >-
+        {{ (((n.tag | default('') | string) ~ ' ' ~ (n.url | default('') | string))
+            | regex_findall('tasks?[-_/:=](\d+)') | first) | default('', true) }}
+  - variables:
+      assigned: >-
+        {% set m = state_attr(tasks_list, 'aufgaben') or {} %}
+        {{ ((m.get(task_id | string, {}).get('zugewiesen')) or [])
+           | map('lower') | map('regex_replace', ' .*$', '') | list }}
+  - variables:
+      recipients: >-
+        {% set ns = namespace(out=[]) %}
+        {% for p in people if p.name and p.notify %}
+          {% set first = p.name | lower | regex_replace(' .*$', '') %}
+          {% if not (task_id and assigned) or first in assigned %}
+            {% set ns.out = ns.out + [p.notify] %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.out }}
+  - repeat:
+      for_each: "{{ recipients }}"
+      sequence:
+        - action: "{{ repeat.item }}"
+          data:
+            title: "{{ n.title | default('Yuvomi') }}"
+            message: "{{ n.body | default('') }}"
+            data: >-
+              {% set d = {'group': 'yuvomi', 'tag': 'yuvomi-' ~ (n.tag or (now().timestamp() | int))} %}
+              {% if click_url %}{% set d = dict(d, url=click_url, clickAction=click_url) %}{% endif %}
+              {{ d }}

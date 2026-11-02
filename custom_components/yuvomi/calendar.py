@@ -18,6 +18,8 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
 from .api import YuvomiError, as_list
+from .const import DOMAIN
+from .util import is_de, txt
 from .coordinator import YuvomiCoordinator, parse_date
 from .entity import YuvomiEntity, module_available
 
@@ -35,6 +37,7 @@ MEAL_NAMES = {
     "dinner": "Abendessen",
     "snack": "Snack",
 }
+MEAL_NAMES_EN = {"breakfast": "Breakfast", "lunch": "Lunch", "dinner": "Dinner", "snack": "Snack"}
 
 
 async def async_setup_entry(
@@ -133,7 +136,7 @@ class YuvomiFamilyCalendar(YuvomiEntity, CalendarEntity):
                 },
             )
         except YuvomiError as err:
-            raise HomeAssistantError(f"Yuvomi: {err}") from err
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
         events = [e for e in (_to_event(x) for x in as_list(data, "events")) if e]
         return [
             e
@@ -163,7 +166,7 @@ class YuvomiFamilyCalendar(YuvomiEntity, CalendarEntity):
         try:
             await self.coordinator.client.post("/api/v1/calendar", body)
         except YuvomiError as err:
-            raise HomeAssistantError(f"Yuvomi: {err}") from err
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
         await self.coordinator.async_request_refresh()
 
     async def async_delete_event(
@@ -179,7 +182,7 @@ class YuvomiFamilyCalendar(YuvomiEntity, CalendarEntity):
             else:
                 await client.delete(f"/api/v1/calendar/{uid}")
         except YuvomiError as err:
-            raise HomeAssistantError(f"Yuvomi: {err}") from err
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
         await self.coordinator.async_request_refresh()
 
 
@@ -191,16 +194,15 @@ class YuvomiWasteCalendar(YuvomiEntity, CalendarEntity):
     def __init__(self, coordinator: YuvomiCoordinator) -> None:
         super().__init__(coordinator, "calendar", "waste")
 
-    @staticmethod
-    def _occ_to_event(o: dict[str, Any]) -> CalendarEvent | None:
+    def _occ_to_event(self, o: dict[str, Any]) -> CalendarEvent | None:
         d = parse_date(o.get("date_key"))
         if d is None:
             return None
         return CalendarEvent(
             start=d,
             end=d + timedelta(days=1),
-            summary=o.get("type_name") or "Müll",
-            description="Verschoben" if o.get("moved") else None,
+            summary=o.get("type_name") or txt(self.hass, "Müll", "Waste"),
+            description=txt(self.hass, "Verschoben", "Moved") if o.get("moved") else None,
             uid=o.get("key"),
         )
 
@@ -227,7 +229,7 @@ class YuvomiWasteCalendar(YuvomiEntity, CalendarEntity):
                 "/api/v1/waste/occurrences", params={"from": frm.isoformat(), "to": to.isoformat()}
             )
         except YuvomiError as err:
-            raise HomeAssistantError(f"Yuvomi: {err}") from err
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
         return [e for e in (self._occ_to_event(o) for o in as_list(data)) if e]
 
 
@@ -239,8 +241,7 @@ class YuvomiMealsCalendar(YuvomiEntity, CalendarEntity):
     def __init__(self, coordinator: YuvomiCoordinator) -> None:
         super().__init__(coordinator, "calendar", "meals")
 
-    @staticmethod
-    def _meal_to_event(m: dict[str, Any]) -> CalendarEvent | None:
+    def _meal_to_event(self, m: dict[str, Any]) -> CalendarEvent | None:
         d = parse_date(m.get("date"))
         if d is None:
             return None
@@ -248,9 +249,9 @@ class YuvomiMealsCalendar(YuvomiEntity, CalendarEntity):
         t_start, t_end = MEAL_TIMES.get(kind, MEAL_TIMES["dinner"])
         tz = dt_util.get_default_time_zone()
         cook = m.get("cook_name")
-        desc = [MEAL_NAMES.get(kind, kind)]
+        desc = [(MEAL_NAMES if is_de(self.hass) else MEAL_NAMES_EN).get(kind, kind)]
         if cook:
-            desc.append(f"Koch: {cook}")
+            desc.append(f"{txt(self.hass, 'Koch', 'Cook')}: {cook}")
         if m.get("notes"):
             desc.append(m["notes"])
         return CalendarEvent(
@@ -288,7 +289,7 @@ class YuvomiMealsCalendar(YuvomiEntity, CalendarEntity):
                 day += timedelta(days=7)
                 weeks += 1
         except YuvomiError as err:
-            raise HomeAssistantError(f"Yuvomi: {err}") from err
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
         return result
 
 
@@ -380,7 +381,7 @@ class YuvomiShiftCalendar(YuvomiEntity, CalendarEntity):
                 "/api/v1/schedule/entries", params={"from": frm.isoformat(), "to": to.isoformat()}
             )
         except YuvomiError as err:
-            raise HomeAssistantError(f"Yuvomi: {err}") from err
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
         return [e for e in (self._to_event(s) for s in as_list(data, "entries")) if e]
 
 
@@ -395,6 +396,7 @@ class YuvomiDeadlineCalendar(YuvomiEntity, CalendarEntity):
     def _all(self) -> list[CalendarEvent]:
         d = self.coordinator.data
         out: list[CalendarEvent] = []
+        h = self.hass
 
         def add(day: Any, summary: str, uid: str, desc: str | None = None) -> None:
             dd = parse_date(day)
@@ -402,23 +404,23 @@ class YuvomiDeadlineCalendar(YuvomiEntity, CalendarEntity):
                 out.append(CalendarEvent(start=dd, end=dd + timedelta(days=1), summary=summary, uid=uid, description=desc))
 
         for item in d.inventory:
-            name = item.get("name") or "Gerät"
-            add(item.get("warranty_until") or item.get("warranty_end"), f"Garantieende: {name}", f"inv-w-{item.get('id')}")
+            name = item.get("name") or txt(h, "Gerät", "Item")
+            add(item.get("warranty_until") or item.get("warranty_end"), f"{txt(h, 'Garantieende', 'Warranty ends')}: {name}", f"inv-w-{item.get('id')}")
             for td in item.get("tracked_dates") or []:
                 if isinstance(td, dict):
-                    add(td.get("date"), f"{td.get('label') or 'Termin'}: {name}", f"inv-d-{td.get('id')}")
+                    add(td.get("date"), f"{td.get('label') or txt(h, 'Termin', 'Date')}: {name}", f"inv-d-{td.get('id')}")
         for sub in d.subscriptions:
             amount = sub.get("amount")
             add(
                 sub.get("next_payment_date") or sub.get("next_payment"),
-                f"Abo: {sub.get('name') or ''}",
+                f"{txt(h, 'Abo', 'Subscription')}: {sub.get('name') or ''}",
                 f"sub-{sub.get('id')}",
                 f"{amount} {sub.get('currency') or ''}".strip() if amount is not None else None,
             )
         for doc in d.documents:
-            add(doc.get("expires_at"), f"Läuft ab: {doc.get('name') or ''}", f"doc-{doc.get('id')}")
+            add(doc.get("expires_at"), f"{txt(h, 'Läuft ab', 'Expires')}: {doc.get('name') or ''}", f"doc-{doc.get('id')}")
         for p in d.prevention_due:
-            add(p.get("next_due_on") or p.get("due_on"), f"Vorsorge: {p.get('name') or p.get('type_name') or ''}", f"prev-{p.get('type_id') or p.get('id')}")
+            add(p.get("next_due_on") or p.get("due_on"), f"{txt(h, 'Vorsorge', 'Prevention')}: {p.get('name') or p.get('type_name') or ''}", f"prev-{p.get('type_id') or p.get('id')}")
         return out
 
     @property

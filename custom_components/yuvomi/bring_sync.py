@@ -144,14 +144,14 @@ class BringSync:
                 self.last_error = None
             except (YuvomiError, Exception) as err:  # noqa: BLE001 – Abgleich darf HA nie stören
                 self.last_error = str(err)
-                _LOGGER.warning("Bring-Abgleich fehlgeschlagen: %s", err)
+                _LOGGER.warning("Bring sync failed: %s", err)
                 return {}
             from homeassistant.util import dt as dt_util
 
             self.last_run = dt_util.now().isoformat()
             self.last_result = result
             if any(result.values()):
-                _LOGGER.debug("Bring-Abgleich: %s", result)
+                _LOGGER.debug("Bring sync: %s", result)
                 await self.coordinator.async_request_refresh()
             else:
                 self.coordinator.async_update_listeners()
@@ -159,7 +159,7 @@ class BringSync:
 
     async def _sync(self) -> dict[str, int]:
         if self.hass.states.get(self.bring) is None or self.hass.states.get(self.bring).state == "unavailable":
-            raise RuntimeError(f"{self.bring} nicht verfügbar")
+            raise RuntimeError(f"{self.bring} unavailable")
         y_raw = await self._yuvomi_items()
         b_raw = await self._bring_items()
         snap = dict(self._snap or {})

@@ -20,7 +20,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import YuvomiApiError, YuvomiAuthError, YuvomiClient, YuvomiConnectionError, YuvomiError
 from .util import check_compat
-from homeassistant.helpers import config_validation as cv, selector
+from homeassistant.helpers import selector
 
 from .const import (
     CONF_BRING_ENTITY,
@@ -147,6 +147,49 @@ class YuvomiConfigFlow(ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Change URL and/or token without removing the integration."""
+        errors: dict[str, str] = {}
+        entry = self._get_reconfigure_entry()
+        if user_input is not None:
+            url = user_input[CONF_URL].strip().rstrip("/")
+            if not url.startswith(("http://", "https://")):
+                url = "http://" + url
+            token = (user_input.get(CONF_TOKEN) or "").strip() or entry.data[CONF_TOKEN]
+            await self.async_set_unique_id(url.lower())
+            if url.lower() != (entry.unique_id or ""):
+                self._abort_if_unique_id_configured()
+            try:
+                await _validate(self.hass, url, token)
+            except YuvomiAuthError:
+                errors["base"] = "invalid_auth"
+            except YuvomiConnectionError:
+                errors["base"] = "cannot_connect"
+            except YuvomiTooOld:
+                errors["base"] = "unsupported_version"
+            except YuvomiApiError as err:
+                errors["base"] = "missing_scope" if err.status == 403 else "unknown"
+            except YuvomiError:
+                errors["base"] = "unknown"
+            else:
+                return self.async_update_reload_and_abort(
+                    entry,
+                    unique_id=url.lower(),
+                    data_updates={CONF_URL: url, CONF_TOKEN: token},
+                )
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_URL, default=entry.data[CONF_URL]): str,
+                    vol.Optional(CONF_TOKEN): str,
+                }
+            ),
+            errors=errors,
+        )
+
     @staticmethod
     @callback
     def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
@@ -157,8 +200,13 @@ def _modules_schema(options: Mapping[str, Any] | None, events: bool) -> vol.Sche
     current = (options or {}).get(CONF_MODULES) or [k for k, (_, on) in MODULES.items() if on]
     return vol.Schema(
         {
-            vol.Required(CONF_MODULES, default=list(current)): cv.multi_select(
-                {k: name for k, (name, _) in MODULES.items()}
+            vol.Required(CONF_MODULES, default=list(current)): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=list(MODULES),
+                    multiple=True,
+                    mode=selector.SelectSelectorMode.LIST,
+                    translation_key="modules",
+                )
             ),
             vol.Optional(CONF_EVENTS, default=(options or {}).get(CONF_EVENTS, events)): bool,
         }

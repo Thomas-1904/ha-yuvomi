@@ -1,0 +1,83 @@
+blueprint:
+  name: Yuvomi – appliance finished → task
+  description: >
+    Creates a task in Yuvomi when an appliance is finished, e.g. "Empty the washing
+    machine" when the washing machine switches to "finished". No duplicate is created while
+    an open task with the same title exists.
+  domain: automation
+  source_url: https://github.com/Thomas-1904/ha-yuvomi/blob/main/blueprints/automation/yuvomi/appliance_done_task.yaml
+  input:
+    appliance:
+      name: Appliance state
+      description: Sensor or binary sensor that shows when the appliance is finished.
+      selector:
+        entity:
+          filter:
+            - domain: [sensor, binary_sensor, input_boolean, select]
+    finished_state:
+      name: State that means "finished"
+      description: e.g. finished, off, Fertig, idle
+      selector: {text: {}}
+    delay:
+      name: Wait before creating the task
+      description: Ignore short blips – the state must stay this long.
+      default: {minutes: 1}
+      selector: {duration: {}}
+    tasks_list:
+      name: Yuvomi task list
+      selector:
+        entity:
+          filter:
+            - integration: yuvomi
+              domain: todo
+    title:
+      name: Task title
+      selector: {text: {}}
+    description:
+      name: Task description (optional)
+      default: ""
+      selector: {text: {multiline: true}}
+    assigned_to:
+      name: Assign to (Yuvomi user IDs, optional)
+      description: Comma-separated, e.g. 1,2. Empty = unassigned.
+      default: ""
+      selector: {text: {}}
+    priority:
+      name: Priority
+      default: medium
+      selector:
+        select:
+          options: [low, medium, high]
+
+mode: single
+
+triggers:
+  - trigger: state
+    entity_id: !input appliance
+    to: !input finished_state
+    for: !input delay
+
+actions:
+  - variables:
+      tasks_list: !input tasks_list
+      title: !input title
+      description: !input description
+      assigned_raw: !input assigned_to
+      priority: !input priority
+  - action: todo.get_items
+    target:
+      entity_id: "{{ tasks_list }}"
+    data:
+      status: needs_action
+    response_variable: open_tasks
+  - condition: template
+    value_template: >-
+      {{ (open_tasks[tasks_list]['items'] | default([]))
+         | selectattr('summary', 'equalto', title) | list | count == 0 }}
+  - action: yuvomi.add_task
+    data: >-
+      {% set d = {'title': title, 'due_date': now().date() | string, 'priority': priority} %}
+      {% if description %}{% set d = dict(d, description=description) %}{% endif %}
+      {% set ids = assigned_raw | string | regex_findall('\d+') | map('int') | list %}
+      {% if ids %}{% set d = dict(d, assigned_to=ids) %}{% endif %}
+      {{ d }}

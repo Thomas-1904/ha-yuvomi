@@ -19,6 +19,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
+from .util import txt
 from .coordinator import YuvomiCoordinator, YuvomiData, first, parse_date
 from .entity import YuvomiEntity, module_available
 
@@ -100,7 +101,7 @@ def _waste_next_all(d: YuvomiData) -> tuple[date | None, list[str]]:
         day = parse_date(nxt.get("date_key"))
         if day is None:
             continue
-        name = nxt.get("type_name") or (entry.get("type") or {}).get("name") or "Müll"
+        name = nxt.get("type_name") or (entry.get("type") or {}).get("name") or "?"
         if best is None or day < best:
             best, names = day, [name]
         elif day == best:
@@ -161,7 +162,6 @@ SENSORS: tuple[YuvomiSensorDescription, ...] = (
         translation_key="tasks_open",
         icon="mdi:checkbox-marked-circle-outline",
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="Aufgaben",
         value_fn=_open_tasks,
         attrs_fn=lambda d: {
             "dringend": [
@@ -177,7 +177,6 @@ SENSORS: tuple[YuvomiSensorDescription, ...] = (
         translation_key="tasks_overdue",
         icon="mdi:alert-circle-outline",
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="Aufgaben",
         value_fn=_overdue_tasks,
     ),
     YuvomiSensorDescription(
@@ -186,7 +185,6 @@ SENSORS: tuple[YuvomiSensorDescription, ...] = (
         translation_key="tasks_done_today",
         icon="mdi:check-all",
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="Aufgaben",
         value_fn=lambda d: (
             _len(d.dashboard.get("tasksDoneToday"))
             if isinstance(d.dashboard.get("tasksDoneToday"), list)
@@ -207,7 +205,6 @@ SENSORS: tuple[YuvomiSensorDescription, ...] = (
         translation_key="shopping_open",
         icon="mdi:cart-outline",
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="Artikel",
         value_fn=lambda d: d.dashboard.get("shoppingOpenCount")
         if d.dashboard.get("shoppingOpenCount") is not None
         else sum(1 for items in d.shopping_items.values() for i in items if not i.get("is_checked")),
@@ -234,7 +231,6 @@ SENSORS: tuple[YuvomiSensorDescription, ...] = (
         translation_key="pantry_expiring",
         icon="mdi:fridge-alert-outline",
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="Artikel",
         value_fn=lambda d: _pantry(d).get("todayCount")
         if _pantry(d).get("todayCount") is not None
         else _pantry(d).get("count"),
@@ -252,7 +248,6 @@ SENSORS: tuple[YuvomiSensorDescription, ...] = (
         translation_key="events_upcoming",
         icon="mdi:calendar-clock",
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="Termine",
         value_fn=lambda d: _len(d.dashboard.get("upcomingEvents")),
         attrs_fn=lambda d: {
             "termine": [
@@ -281,7 +276,6 @@ SENSORS: tuple[YuvomiSensorDescription, ...] = (
         translation_key="housekeeping_due",
         icon="mdi:broom",
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="Aufgaben",
         value_fn=lambda d: len(_housekeeping_due(d)),
         attrs_fn=lambda d: {
             "faellig": [t.get("name") or t.get("title") for t in _housekeeping_due(d)],
@@ -355,7 +349,7 @@ async def async_setup_entry(
             if type_id is None or str(type_id) in known:
                 continue
             known.add(str(type_id))
-            new.append(YuvomiWasteTypeSensor(coordinator, int(type_id), wtype.get("name") or "Müll"))
+            new.append(YuvomiWasteTypeSensor(coordinator, int(type_id), wtype.get("name") or str(type_id)))
         if new:
             async_add_entities(new)
 
@@ -390,7 +384,7 @@ class YuvomiWasteTypeSensor(YuvomiEntity, SensorEntity):
     def __init__(self, coordinator: YuvomiCoordinator, type_id: int, name: str) -> None:
         super().__init__(coordinator, f"type_{type_id}", "waste")
         self._type_id = type_id
-        self._attr_name = f"Müll {name}"
+        self._attr_name = f"{txt(coordinator.hass, 'Müll', 'Waste')} {name}"
 
     def _entry(self) -> dict[str, Any] | None:
         for e in self.coordinator.data.waste_next:

@@ -39,7 +39,7 @@ The integration talks to Yuvomi **only through the public REST API (`/api/v1`)**
 
 **Manual:** download `yuvomi.zip` from the latest [release](https://github.com/Thomas-1904/ha-yuvomi/releases), unpack it to `/config/custom_components/yuvomi`, restart Home Assistant.
 
-Then: Settings → Devices & services → Add integration → **Yuvomi (Community)**, enter the URL (e.g. `http://192.168.1.10:3005`) and an API token, and pick the modules you want. If the token changes later, Home Assistant asks for the new one (re-authentication) – the configuration is kept.
+Then: Settings → Devices & services → Add integration → **Yuvomi (Community)**, enter the URL (e.g. `http://192.168.1.10:3005`) and an API token, and pick the modules you want. If the token changes later, Home Assistant asks for the new one (re-authentication). To change the URL (or the token) yourself: Settings → Devices & services → Yuvomi → ⋮ → *Reconfigure*. The configuration is kept either way.
 
 ## API token and scopes
 
@@ -76,13 +76,13 @@ Tested against real data: tasks, shopping lists, pantry, family calendar, meal p
 | Recipes | Sensor with all recipes |
 | Pantry | To-do list (due = best-before, completing = used up), sensors items / low / expiring, expired binary sensor |
 | Inventory & maintenance | Inventory sensor, sensor per item with next service, "done" button, deadlines calendar |
-| Cleaning plan & housekeeper | Due-chores sensor (all chores with area, interval, last done, status as attributes), "done" button per chore, housekeeper-present binary sensor |
+| Cleaning plan & housekeeper | To-do list *Cleaning plan* (due chores open, checking = done; new item with description `area · 7` sets area and interval in days), due-chores sensor (all chores with area, interval, last done, status as attributes), "done" button per chore, housekeeper-present binary sensor |
 | Birthdays | Birthdays calendar, next-birthday sensor |
 | Reminders | Pending-reminders sensor, reminder-due binary sensor |
 | Waste *(exp.)* | Calendar, next-collection sensors, today/tomorrow binary sensors |
 | Budget, loans, shared expenses *(exp.)* | Expenses/balance this month, per-account and subscription sensors, renew button, remaining loans, shared balance |
 | Rewards, notes, contacts, documents, shifts, health *(exp.)* | Pending redemptions, pinned notes, contacts, expiring documents, shift-plan calendar and shifts today, medications, prevention due, weight, blood pressure, calories today |
-| Always | Refresh button; diagnostic sensors "Webhook" (disabled by default) and "Bring sync" (when configured) |
+| Always | Event entity *Notification* (one event per Yuvomi notification, usable in the automation editor), refresh button; diagnostic sensors "Webhook" (disabled by default) and "Bring sync" (when configured) |
 
 "Done by": when a task is completed from Home Assistant, the integration looks for the Yuvomi member whose name matches the logged-in Home Assistant user (full or first name).
 
@@ -123,7 +123,15 @@ In the options you can pick any Home Assistant to-do list (e.g. a Bring list fro
 ## Events
 
 - `yuvomi_changed` for every created, updated or deleted object: `resource`, `action` (`created`/`updated`/`deleted`), `id`, `title`, `item`, `changed`, `old_status`.
-- `yuvomi_webhook` for incoming notifications: `data.notification` with `title`, `body`, `url`, `tag`, `priority`. The payload names no recipient – to send notifications to individual phones, use your own automation (e.g. look up the task's assignee from the tasks to-do list's attributes).
+- `yuvomi_webhook` for incoming notifications: `data.notification` with `title`, `body`, `url`, `tag`, `priority`. The payload names no recipient – to send notifications to individual phones, use the blueprint below or your own automation.
+- The event entity *Notification* fires the same notifications as event type `notification` with `title`, `body`, `url`, `tag`, `priority`, `task_id` (parsed from tag/url) and `sent_at`.
+
+## Blueprints
+
+| Blueprint | Import |
+|---|---|
+| Notifications to the assigned person – task notifications go only to the people the task is assigned to, everything else to everyone | [![Import](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FThomas-1904%2Fha-yuvomi%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fyuvomi%2Fnotify_assignees.yaml) |
+| Appliance finished → task – e.g. "Empty the washing machine", no duplicates while one is open | [![Import](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FThomas-1904%2Fha-yuvomi%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fyuvomi%2Fappliance_done_task.yaml) |
 
 ## Troubleshooting
 
@@ -133,6 +141,10 @@ In the options you can pick any Home Assistant to-do list (e.g. a Bring list fro
 - **No instant updates:** check the log for "Yuvomi-Push nicht eingerichtet" (channel could not be created – token without admin rights, or no reachable URL) and Yuvomi's channel status.
 - **Rate limit messages:** raise the polling interval; other devices behind the same IP count towards Yuvomi's limit too.
 
+## Diagnostics
+
+Settings → Devices & services → Yuvomi → ⋮ → *Download diagnostics*. The file contains the setup, the Yuvomi version, which modules respond, and per data type only the number of entries and their field names – no family data. Token, URL and webhook id are redacted. Please attach it to bug reports.
+
 ## Removal
 
 Delete the integration under Settings → Devices & services, then remove it in HACS (or delete `custom_components/yuvomi`). A notification channel created by the integration stays in Yuvomi and can be deleted there.
@@ -141,7 +153,7 @@ Delete the integration under Settings → Devices & services, then remove it in 
 
 - Tested with one household and one Yuvomi instance (Yuvomi 2.79 and 2.84, Docker). Several Yuvomi instances in one Home Assistant should work but are untested.
 - "Today" and "overdue" are calculated in Home Assistant's time zone, while Yuvomi uses the household's time zone. If the two differ, due dates can shift by one day – set both to the same time zone.
-- Some log and error messages are still German only.
+- Attribute names of the entities (e.g. `aufgaben`, `zugewiesen`, `faellig`) are German, so existing dashboards and automations keep working.
 
 ## Maintenance
 

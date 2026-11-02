@@ -15,7 +15,7 @@ from homeassistant.util import dt as dt_util
 from .coordinator import YuvomiCoordinator, YuvomiData, first, parse_date
 from .entity import YuvomiEntity, module_available
 from .sensor import YuvomiSensorDescription
-from .util import rrule_text
+from .util import rrule_text, txt
 
 
 def _f(v: Any) -> float | None:
@@ -172,45 +172,45 @@ def _recurring(d: YuvomiData) -> list[dict[str, Any]]:
 SENSORS_V2: tuple[YuvomiSensorDescription, ...] = (
     YuvomiSensorDescription(
         key="tasks_done_week", translation_key="tasks_done_week", module="tasks", icon="mdi:check-decagram-outline",
-        state_class=SensorStateClass.MEASUREMENT, native_unit_of_measurement="Aufgaben",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda d: len(_done_since(d, 7)), attrs_fn=_week_attrs,
     ),
     YuvomiSensorDescription(
         key="tasks_done_month", translation_key="tasks_done_month", module="tasks", icon="mdi:calendar-check-outline",
-        state_class=SensorStateClass.MEASUREMENT, native_unit_of_measurement="Aufgaben",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda d: len(_done_since(d, 30)),
         attrs_fn=lambda d: {"je_person": _count_by(_done_since(d, 30), _who), "je_kategorie": _count_by(_done_since(d, 30), lambda c: c.get("category") or "misc")},
     ),
     YuvomiSensorDescription(
         key="tasks_streak", translation_key="tasks_streak", module="tasks", icon="mdi:fire",
-        state_class=SensorStateClass.MEASUREMENT, native_unit_of_measurement="Tage",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=_streak,
     ),
     YuvomiSensorDescription(
         key="tasks_recurring", translation_key="tasks_recurring", module="tasks", icon="mdi:repeat",
-        state_class=SensorStateClass.MEASUREMENT, native_unit_of_measurement="Serien",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda d: len(_recurring(d)), attrs_fn=lambda d: {"serien": _recurring(d)},
     ),
     YuvomiSensorDescription(
         key="pantry_items", translation_key="pantry_items", module="pantry", icon="mdi:fridge-outline",
-        state_class=SensorStateClass.MEASUREMENT, native_unit_of_measurement="Artikel",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda d: len(d.pantry),
     ),
     YuvomiSensorDescription(
         key="pantry_low", translation_key="pantry_low", module="pantry", icon="mdi:package-variant-remove",
-        state_class=SensorStateClass.MEASUREMENT, native_unit_of_measurement="Artikel",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda d: len(_pantry_low(d)),
         attrs_fn=lambda d: {"artikel": [i.get("name") for i in _pantry_low(d)]},
     ),
     YuvomiSensorDescription(
         key="recipes", translation_key="recipes", module="recipes", icon="mdi:book-open-variant",
-        state_class=SensorStateClass.MEASUREMENT, native_unit_of_measurement="Rezepte",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda d: len(d.recipes),
         attrs_fn=lambda d: {"rezepte": {str(r.get("id")): r.get("title") or r.get("name") for r in d.recipes}},
     ),
     YuvomiSensorDescription(
         key="inventory_items", translation_key="inventory_items", module="inventory", icon="mdi:archive-outline",
-        state_class=SensorStateClass.MEASUREMENT, native_unit_of_measurement="Gegenstände",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda d: len(d.inventory),
     ),
     YuvomiSensorDescription(
@@ -233,12 +233,12 @@ SENSORS_V2: tuple[YuvomiSensorDescription, ...] = (
     ),
     YuvomiSensorDescription(
         key="rewards_pending", translation_key="rewards_pending", module="rewards", icon="mdi:gift-outline",
-        state_class=SensorStateClass.MEASUREMENT, native_unit_of_measurement="Anfragen",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda d: (d.rewards.get("pendingCount") or 0) + (d.rewards.get("moneyPendingCount") or 0),
     ),
     YuvomiSensorDescription(
         key="reminders_pending", translation_key="reminders_pending", module="reminders", icon="mdi:bell-ring-outline",
-        state_class=SensorStateClass.MEASUREMENT, native_unit_of_measurement="Erinnerungen",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda d: len(d.reminders),
         attrs_fn=lambda d: {
             "erinnerungen": [
@@ -255,7 +255,7 @@ SENSORS_V2: tuple[YuvomiSensorDescription, ...] = (
     ),
     YuvomiSensorDescription(
         key="notes_pinned", translation_key="notes_pinned", module="notes", icon="mdi:pin-outline",
-        state_class=SensorStateClass.MEASUREMENT, native_unit_of_measurement="Notizen",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda d: sum(1 for n in d.notes if n.get("pinned")),
         attrs_fn=lambda d: {
             "angeheftet": [
@@ -268,12 +268,12 @@ SENSORS_V2: tuple[YuvomiSensorDescription, ...] = (
     ),
     YuvomiSensorDescription(
         key="contacts", translation_key="contacts", module="contacts", icon="mdi:card-account-phone-outline",
-        state_class=SensorStateClass.MEASUREMENT, native_unit_of_measurement="Kontakte",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda d: len(d.contacts),
     ),
     YuvomiSensorDescription(
         key="documents_expiring", translation_key="documents_expiring", module="documents", icon="mdi:file-clock-outline",
-        state_class=SensorStateClass.MEASUREMENT, native_unit_of_measurement="Dokumente",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda d: sum(1 for x in d.documents if x.get("expires_at")),
         attrs_fn=lambda d: {
             "dokumente": [
@@ -293,7 +293,7 @@ SENSORS_V2: tuple[YuvomiSensorDescription, ...] = (
     ),
     YuvomiSensorDescription(
         key="meds_due", translation_key="meds_due", module="health", icon="mdi:pill",
-        state_class=SensorStateClass.MEASUREMENT, native_unit_of_measurement="Medikamente",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda d: len(d.medications),
         attrs_fn=lambda d: {
             "medikamente": [
@@ -304,7 +304,7 @@ SENSORS_V2: tuple[YuvomiSensorDescription, ...] = (
     ),
     YuvomiSensorDescription(
         key="prevention_due", translation_key="prevention_due", module="health", icon="mdi:needle",
-        state_class=SensorStateClass.MEASUREMENT, native_unit_of_measurement="Termine",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda d: len(d.prevention_due),
         attrs_fn=lambda d: {"faellig": d.prevention_due},
     ),
@@ -361,7 +361,7 @@ class InventorySensor(_DynamicSensor):
 
     @property
     def name(self) -> str:
-        return f"Wartung {(self._obj() or {}).get('name') or self._obj_id}"
+        return f"{txt(self.hass, 'Wartung', 'Maintenance')} {(self._obj() or {}).get('name') or self._obj_id}"
 
     def _next(self) -> tuple[date | None, str | None, Any]:
         o = self._obj() or {}
@@ -401,7 +401,7 @@ class SubscriptionSensor(_DynamicSensor):
 
     @property
     def name(self) -> str:
-        return f"Abo {(self._obj() or {}).get('name') or self._obj_id}"
+        return f"{txt(self.hass, 'Abo', 'Subscription')} {(self._obj() or {}).get('name') or self._obj_id}"
 
     @property
     def native_value(self) -> date | None:
@@ -428,7 +428,7 @@ class LoanSensor(_DynamicSensor):
 
     @property
     def name(self) -> str:
-        return f"Kredit {(self._obj() or {}).get('name') or self._obj_id}"
+        return f"{txt(self.hass, 'Kredit', 'Loan')} {(self._obj() or {}).get('name') or self._obj_id}"
 
     @property
     def native_value(self) -> float | None:
@@ -453,7 +453,7 @@ class AccountSensor(_DynamicSensor):
 
     @property
     def name(self) -> str:
-        return f"Konto {(self._obj() or {}).get('name') or self._obj_id}"
+        return f"{txt(self.hass, 'Konto', 'Account')} {(self._obj() or {}).get('name') or self._obj_id}"
 
     @property
     def native_unit_of_measurement(self) -> str:
@@ -471,7 +471,7 @@ class MoneySensor(_DynamicSensor):
 
     @property
     def name(self) -> str:
-        return f"Taschengeld {(self._obj() or {}).get('display_name') or self._obj_id}"
+        return f"{txt(self.hass, 'Taschengeld', 'Pocket money')} {(self._obj() or {}).get('display_name') or self._obj_id}"
 
     @property
     def native_unit_of_measurement(self) -> str:
@@ -490,7 +490,7 @@ class MedicationSensor(_DynamicSensor):
 
     @property
     def name(self) -> str:
-        return f"Vorrat {(self._obj() or {}).get('name') or self._obj_id}"
+        return f"{txt(self.hass, 'Vorrat', 'Pantry')} {(self._obj() or {}).get('name') or self._obj_id}"
 
     @property
     def native_value(self) -> float | None:
@@ -507,7 +507,10 @@ class PointsSensor(YuvomiEntity, SensorEntity):
 
     _attr_icon = "mdi:star-circle-outline"
     _attr_state_class = SensorStateClass.MEASUREMENT
-    _attr_native_unit_of_measurement = "Punkte"
+
+    @property
+    def native_unit_of_measurement(self) -> str:
+        return txt(self.hass, "Punkte", "points")
 
     def __init__(self, coordinator: YuvomiCoordinator, user_id: str) -> None:
         super().__init__(coordinator, f"points_{user_id}", "rewards")
@@ -521,7 +524,7 @@ class PointsSensor(YuvomiEntity, SensorEntity):
 
     @property
     def name(self) -> str:
-        return f"Punkte {self.coordinator.member_name(self._uid) or self._uid}"
+        return f"{txt(self.hass, 'Punkte', 'Points')} {self.coordinator.member_name(self._uid) or self._uid}"
 
     @property
     def available(self) -> bool:
@@ -537,7 +540,10 @@ class MemberSensor(YuvomiEntity, SensorEntity):
 
     _attr_icon = "mdi:account-check-outline"
     _attr_state_class = SensorStateClass.MEASUREMENT
-    _attr_native_unit_of_measurement = "offen"
+
+    @property
+    def native_unit_of_measurement(self) -> str:
+        return txt(self.hass, "offen", "open")
 
     def __init__(self, coordinator: YuvomiCoordinator, mid: int) -> None:
         super().__init__(coordinator, f"member_{mid}", "tasks")
@@ -545,7 +551,7 @@ class MemberSensor(YuvomiEntity, SensorEntity):
 
     @property
     def name(self) -> str:
-        return f"Aufgaben {self.coordinator.data.members.get(self._mid, self._mid)}"
+        return f"{txt(self.hass, 'Aufgaben', 'Tasks')} {self.coordinator.data.members.get(self._mid, self._mid)}"
 
     @property
     def available(self) -> bool:

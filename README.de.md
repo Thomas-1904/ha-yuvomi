@@ -39,7 +39,7 @@ Die Integration spricht **ausschließlich über die öffentliche REST-API (`/api
 
 **Manuell:** `yuvomi.zip` aus dem neuesten [Release](https://github.com/Thomas-1904/ha-yuvomi/releases) laden, nach `/config/custom_components/yuvomi` entpacken, Home Assistant neu starten.
 
-Danach: Einstellungen → Geräte & Dienste → Integration hinzufügen → **Yuvomi (Community)**, URL (z. B. `http://192.168.1.10:3005`) und API-Token eingeben, Module auswählen. Ändert sich das Token später, fragt Home Assistant nach dem neuen (erneute Anmeldung) – die Einrichtung bleibt erhalten.
+Danach: Einstellungen → Geräte & Dienste → Integration hinzufügen → **Yuvomi (Community)**, URL (z. B. `http://192.168.1.10:3005`) und API-Token eingeben, Module auswählen. Ändert sich das Token später, fragt Home Assistant nach dem neuen (erneute Anmeldung). URL (oder Token) selbst ändern: Einstellungen → Geräte & Dienste → Yuvomi → ⋮ → *Neu konfigurieren*. Die Einrichtung bleibt in beiden Fällen erhalten.
 
 ## API-Token und Scopes
 
@@ -76,13 +76,13 @@ Mit echten Daten getestet: Aufgaben, Einkaufslisten, Vorrat, Familienkalender, E
 | Rezepte | Sensor mit allen Rezepten |
 | Vorrat | To-do-Liste (Fälligkeit = MHD, abhaken = aufgebraucht), Sensoren Artikel / knapp / läuft ab, Binärsensor abgelaufen |
 | Inventar & Wartung | Sensor Inventar, Sensor je Gegenstand mit nächster Wartung, Knopf „Erledigt“, Kalender „Fristen & Wartung“ |
-| Putzplan & Haushaltshilfe | Sensor fällige Putzaufgaben (alle Aufgaben mit Bereich, Intervall, zuletzt erledigt, Status als Attribute), Knopf „Erledigt“ je Aufgabe, Binärsensor Haushaltshilfe da |
+| Putzplan & Haushaltshilfe | To-do-Liste *Putzplan* (fällige Aufgaben offen, abhaken = erledigt; neuer Eintrag mit Beschreibung `Bereich · 7` setzt Bereich und Intervall in Tagen), Sensor fällige Putzaufgaben (alle Aufgaben mit Bereich, Intervall, zuletzt erledigt, Status als Attribute), Knopf „Erledigt“ je Aufgabe, Binärsensor Haushaltshilfe da |
 | Geburtstage | Kalender, Sensor nächster Geburtstag |
 | Erinnerungen | Sensor fällige Erinnerungen, Binärsensor Erinnerung fällig |
 | Müll *(exp.)* | Kalender, Sensoren nächste Abholung, Binärsensoren heute/morgen |
 | Budget, Kredite, geteilte Ausgaben *(exp.)* | Ausgaben/Saldo Monat, Sensoren je Konto und Abo, Knopf „Abo verlängern“, Restschuld, Saldo geteilte Ausgaben |
 | Belohnungen, Notizen, Kontakte, Dokumente, Schichten, Gesundheit *(exp.)* | Offene Einlösungen, angeheftete Notizen, Kontakte, ablaufende Dokumente, Kalender Schichtplan und Schichten heute, Medikamente, Vorsorge fällig, Gewicht, Blutdruck, Kalorien heute |
-| Immer | Knopf „Neu laden“; Diagnosesensoren „Webhook“ (standardmäßig aus) und „Bring-Abgleich“ (wenn eingerichtet) |
+| Immer | Ereignis-Entität *Benachrichtigung* (ein Ereignis je Yuvomi-Benachrichtigung, im Automationseditor nutzbar), Knopf „Neu laden“; Diagnosesensoren „Webhook“ (standardmäßig aus) und „Bring-Abgleich“ (wenn eingerichtet) |
 
 „Erledigt von“: Wird eine Aufgabe in Home Assistant abgehakt, sucht die Integration das Yuvomi-Mitglied, dessen Name zum angemeldeten Home-Assistant-Benutzer passt (voller Name oder Vorname).
 
@@ -123,7 +123,17 @@ In den Optionen lässt sich eine beliebige To-do-Liste aus Home Assistant (z. B.
 ## Ereignisse
 
 - `yuvomi_changed` bei jedem neuen, geänderten oder gelöschten Objekt: `resource`, `action` (`created`/`updated`/`deleted`), `id`, `title`, `item`, `changed`, `old_status`.
-- `yuvomi_webhook` für eingehende Benachrichtigungen: `data.notification` mit `title`, `body`, `url`, `tag`, `priority`. Der Payload nennt keinen Empfänger – Benachrichtigungen an einzelne Handys zu verteilen, geht über eine eigene Automation (z. B. die Zuweisung der Aufgabe aus den Attributen der Aufgabenliste lesen).
+- `yuvomi_webhook` für eingehende Benachrichtigungen: `data.notification` mit `title`, `body`, `url`, `tag`, `priority`. Der Payload nennt keinen Empfänger – Benachrichtigungen an einzelne Handys zu verteilen, geht über die Blueprint unten oder eine eigene Automation.
+- Die Ereignis-Entität *Benachrichtigung* löst dieselben Benachrichtigungen als Ereignistyp `notification` aus, mit `title`, `body`, `url`, `tag`, `priority`, `task_id` (aus Tag/URL gelesen) und `sent_at`.
+
+## Blueprints
+
+| Blueprint | Importieren |
+|---|---|
+| Benachrichtigungen an die zugewiesene Person – Aufgaben-Benachrichtigungen nur an die zugewiesenen Personen, alles andere an alle | [![Importieren](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FThomas-1904%2Fha-yuvomi%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fyuvomi%2Fnotify_assignees.yaml) |
+| Gerät fertig → Aufgabe – z. B. „Waschmaschine ausräumen“, keine Doppelten, solange eine offen ist | [![Importieren](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FThomas-1904%2Fha-yuvomi%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fyuvomi%2Fappliance_done_task.yaml) |
+
+Die Blueprints sind englisch beschriftet.
 
 ## Fehlersuche
 
@@ -133,6 +143,10 @@ In den Optionen lässt sich eine beliebige To-do-Liste aus Home Assistant (z. B.
 - **Keine Sofort-Aktualisierung:** Im Log nach „Yuvomi-Push nicht eingerichtet“ suchen (Kanal konnte nicht angelegt werden – Token ohne Admin-Rechte oder keine erreichbare Adresse) und den Kanalstatus in Yuvomi prüfen.
 - **Meldungen zum Ratenlimit:** Abfrageintervall erhöhen; andere Geräte hinter derselben IP zählen bei Yuvomi mit.
 
+## Diagnose
+
+Einstellungen → Geräte & Dienste → Yuvomi → ⋮ → *Diagnose herunterladen*. Die Datei enthält die Einrichtung, die Yuvomi-Version, welche Module antworten, und je Datenart nur die Anzahl der Einträge und ihre Feldnamen – keine Familiendaten. Token, URL und Webhook-ID sind geschwärzt. Bitte bei Fehlermeldungen anhängen.
+
 ## Entfernen
 
 Integration unter Einstellungen → Geräte & Dienste löschen, danach in HACS entfernen (oder `custom_components/yuvomi` löschen). Ein von der Integration angelegter Benachrichtigungskanal bleibt in Yuvomi und kann dort gelöscht werden.
@@ -141,7 +155,7 @@ Integration unter Einstellungen → Geräte & Dienste löschen, danach in HACS e
 
 - Getestet mit einem Haushalt und einer Yuvomi-Instanz (Yuvomi 2.79 und 2.84, Docker). Mehrere Yuvomi-Instanzen in einem Home Assistant sollten funktionieren, sind aber nicht getestet.
 - „Heute“ und „überfällig“ rechnet die Integration in der Zeitzone von Home Assistant, Yuvomi in der Zeitzone des Haushalts. Weichen beide voneinander ab, können Fälligkeiten um einen Tag verrutschen – beide auf dieselbe Zeitzone stellen.
-- Einige Log- und Fehlermeldungen gibt es bisher nur auf Deutsch.
+- Die Attributnamen der Entitäten (z. B. `aufgaben`, `zugewiesen`, `faellig`) sind deutsch, damit bestehende Dashboards und Automationen weiterlaufen.
 
 ## Pflege
 

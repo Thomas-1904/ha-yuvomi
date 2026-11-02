@@ -28,11 +28,11 @@ def _waste_on(d: YuvomiData, offset: int) -> list[str]:
     for entry in d.waste_next:
         nxt = entry.get("next")
         if isinstance(nxt, dict) and parse_date(nxt.get("date_key")) == target:
-            names.append(nxt.get("type_name") or (entry.get("type") or {}).get("name") or "Müll")
+            names.append(nxt.get("type_name") or (entry.get("type") or {}).get("name") or "?")
     if not names:
         for p in d.dashboard.get("wastePickups") or []:
             if isinstance(p, dict) and parse_date(p.get("date_key") or p.get("date")) == target:
-                names.append(p.get("type_name") or p.get("name") or "Müll")
+                names.append(p.get("type_name") or p.get("name") or "?")
     return names
 
 
