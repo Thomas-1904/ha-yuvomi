@@ -142,6 +142,10 @@ Integration unter Einstellungen → Geräte & Dienste löschen, danach in HACS e
 - Getestet mit einem Haushalt und einer Yuvomi-Instanz (Yuvomi 2.79 und 2.84, Docker). Mehrere Yuvomi-Instanzen in einem Home Assistant sollten funktionieren, sind aber nicht getestet.
 - Einige Log- und Fehlermeldungen gibt es bisher nur auf Deutsch.
 
+## Pflege
+
+Dies ist ein Hobbyprojekt, gepflegt in meiner Freizeit nach Zeit und Lust. Issues und Pull Requests sind willkommen, eine Antwortzeit oder Support gibt es aber nicht.
+
 ## Lizenz
 
 MIT – siehe [LICENSE](LICENSE). Yuvomi selbst ist ein eigenständiges Projekt mit eigener Lizenz. Das Icon ist ein eigener Entwurf für diese Integration.

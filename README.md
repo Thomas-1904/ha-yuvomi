@@ -142,6 +142,10 @@ Delete the integration under Settings → Devices & services, then remove it in 
 - Tested with one household and one Yuvomi instance (Yuvomi 2.79 and 2.84, Docker). Several Yuvomi instances in one Home Assistant should work but are untested.
 - Some log and error messages are still German only.
 
+## Maintenance
+
+This is a hobby project, maintained in my spare time as time and interest allow. Issues and pull requests are welcome, but there is no guaranteed response time or support.
+
 ## License
 
 MIT – see [LICENSE](LICENSE). Yuvomi itself is a separate project with its own license. The icon is an original design for this integration.
