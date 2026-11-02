@@ -1,12 +1,32 @@
-<img src="brand/yuvomi-icon.png" alt="" width="96" align="right">
+<p align="center">
+  <img src="brand/yuvomi-icon.png" alt="" width="120">
+</p>
 
-# Yuvomi for Home Assistant
+<h1 align="center">Yuvomi for Home Assistant</h1>
 
-*Unofficial community integration – not affiliated with the Yuvomi project.* · [Deutsch](README.de.md)
+<p align="center">
+  <em>Unofficial community integration – not affiliated with the Yuvomi project.<br>
+  <a href="README.de.md">Deutsch</a></em>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Thomas-1904/ha-yuvomi/releases"><img alt="Release" src="https://img.shields.io/github/v/release/Thomas-1904/ha-yuvomi?color=7c3aed"></a>
+  <a href="https://hacs.xyz"><img alt="HACS" src="https://img.shields.io/badge/HACS-Custom-7c3aed"></a>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/Thomas-1904/ha-yuvomi?color=7c3aed"></a>
+</p>
 
 Connects the self-hosted family planner [Yuvomi](https://github.com/ulsklyc/yuvomi) to Home Assistant. Yuvomi stays the source of truth: everything Home Assistant creates, changes or deletes is written to Yuvomi immediately, and changes made in Yuvomi show up in Home Assistant as entity states and events.
 
 The integration talks to Yuvomi **only through the public REST API (`/api/v1`)** with an API token and the scopes listed below – the interface the Yuvomi maintainer commits to keeping stable. Every endpoint it uses is part of Yuvomi's OpenAPI specification; internal endpoints, the database or files are never touched. Questions about this integration go to this repository, not to the Yuvomi project.
+
+## Highlights
+
+- ✅ **Tasks, shopping lists, pantry** as Home Assistant to-do lists – create, edit, complete, delete
+- 📅 **Calendars** for family events, meal plan and birthdays
+- 🧹 **Cleaning plan** with a "done" button per chore
+- 🛒 **Bring sync** – keep a Yuvomi shopping list and Bring in step, both ways
+- ⚡ **Near-instant updates** via a Yuvomi notification channel (webhook)
+- 🔔 **Events** for your own automations, e.g. notifications to the right phone
 
 ## Requirements
 

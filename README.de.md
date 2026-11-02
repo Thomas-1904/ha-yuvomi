@@ -1,12 +1,32 @@
-<img src="brand/yuvomi-icon.png" alt="" width="96" align="right">
+<p align="center">
+  <img src="brand/yuvomi-icon.png" alt="" width="120">
+</p>
 
-# Yuvomi für Home Assistant
+<h1 align="center">Yuvomi für Home Assistant</h1>
 
-*Inoffizielle Community-Integration – nicht Teil des Yuvomi-Projekts.* · [English](README.md)
+<p align="center">
+  <em>Inoffizielle Community-Integration – nicht Teil des Yuvomi-Projekts.<br>
+  <a href="README.md">English</a></em>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Thomas-1904/ha-yuvomi/releases"><img alt="Release" src="https://img.shields.io/github/v/release/Thomas-1904/ha-yuvomi?color=7c3aed"></a>
+  <a href="https://hacs.xyz"><img alt="HACS" src="https://img.shields.io/badge/HACS-Custom-7c3aed"></a>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/Thomas-1904/ha-yuvomi?color=7c3aed"></a>
+</p>
 
 Bindet den selbst gehosteten Familienplaner [Yuvomi](https://github.com/ulsklyc/yuvomi) an Home Assistant an. Yuvomi bleibt der Master: Was Home Assistant anlegt, ändert oder löscht, landet sofort in Yuvomi, und Änderungen in Yuvomi kommen in Home Assistant als Zustände und Ereignisse an.
 
 Die Integration spricht **ausschließlich über die öffentliche REST-API (`/api/v1`)** mit einem API-Token und den unten genannten Scopes – die Schnittstelle, die der Yuvomi-Entwickler stabil zusagt. Jeder genutzte Endpunkt steht in Yuvomis OpenAPI-Spezifikation; interne Endpunkte, Datenbank oder Dateien werden nie angefasst. Fragen zu dieser Integration bitte hier im Repository stellen, nicht beim Yuvomi-Projekt.
+
+## Auf einen Blick
+
+- ✅ **Aufgaben, Einkaufslisten, Vorrat** als To-do-Listen in Home Assistant – anlegen, bearbeiten, abhaken, löschen
+- 📅 **Kalender** für Familientermine, Essensplan und Geburtstage
+- 🧹 **Putzplan** mit „Erledigt“-Knopf je Aufgabe
+- 🛒 **Bring-Abgleich** – Yuvomi-Einkaufsliste und Bring in beide Richtungen gleich halten
+- ⚡ **Nahezu sofortige Aktualisierung** über einen Yuvomi-Benachrichtigungskanal (Webhook)
+- 🔔 **Ereignisse** für eigene Automationen, z. B. Benachrichtigungen aufs richtige Handy
 
 ## Voraussetzungen
 
