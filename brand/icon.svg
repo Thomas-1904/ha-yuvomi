@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#0FA3A3"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="512" height="512" rx="116" fill="url(#bg)"/>
+  <!-- Haus -->
+  <path d="M256 104 L408 228 Q416 235 416 246 L416 380 Q416 408 388 408 L124 408 Q96 408 96 380 L96 246 Q96 235 104 228 Z"
+        fill="none" stroke="#FFFFFF" stroke-width="30" stroke-linejoin="round"/>
+  <!-- Haken -->
+  <path d="M184 302 L236 352 L332 252" fill="none" stroke="#FFFFFF" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- drei Punkte = Familie -->
+  <circle cx="356" cy="132" r="18" fill="#FFFFFF" opacity=".95"/>
+  <circle cx="398" cy="150" r="13" fill="#FFFFFF" opacity=".8"/>
+  <circle cx="426" cy="182" r="9" fill="#FFFFFF" opacity=".65"/>
+</svg>

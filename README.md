@@ -1,3 +1,5 @@
+<img src="brand/icon.png" alt="" width="96" align="right">
+
 # Yuvomi for Home Assistant
 
 *Unofficial community integration – not affiliated with the Yuvomi project.* · [Deutsch](README.de.md)
