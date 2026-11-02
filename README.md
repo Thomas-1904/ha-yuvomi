@@ -59,7 +59,7 @@ Create the token in Yuvomi under *Settings → API tokens*. Give it only the sco
 | Budget, accounts, subscriptions, loans, shared expenses | `budget:write` | |
 | Rewards & pocket money | `rewards:write` | |
 | Notes / Contacts / Documents / Shift schedule / Health | `notes` / `contacts` / `documents` / `schedule` / `health` | `:read` or `:write` |
-| **Instant updates (notification channel created automatically)** | unscoped token of an **administrator** | notification channels are admin-only and not covered by scopes; with a scoped token, turn the option off and create the channel by hand (see below) |
+| Instant updates – optional automatic channel setup | unscoped token of an **administrator** | not recommended: such a token has full access to all family data and stays stored in Home Assistant. Recommended instead: keep the scoped token and create the channel once by hand (see below) |
 
 ## Modules and entities
 
@@ -93,7 +93,7 @@ Settings → Devices & services → Yuvomi → *Configure*:
 - **Modules** to load (deselected modules remove their entities).
 - **Fire change events** (`yuvomi_changed`, on by default).
 - **Polling interval** in seconds (default 60, 15–3600).
-- **Instant updates**: create the Yuvomi notification channel automatically (needs an admin token without scopes).
+- **Instant updates**: create the Yuvomi notification channel automatically. Convenient, but needs an admin token without scopes (full access to all family data) – the manual setup below is recommended.
 - **Bring list** and **Yuvomi shopping list** for the Bring sync (empty = off).
 
 ## Keeping Home Assistant up to date
@@ -101,8 +101,8 @@ Settings → Devices & services → Yuvomi → *Configure*:
 - **Polling** of all enabled modules at the configured interval.
 - **Change counters**: every 15 s the integration reads `/api/v1/shopping/versions` (one tiny request) and refreshes immediately when a list changed.
 - **Notification channel (recommended):** Yuvomi forwards its notifications to a Home Assistant webhook; each one arrives as the event `yuvomi_webhook` and triggers an immediate refresh. With working webhooks you can set the polling interval more generously.
-  - *Automatic:* the option *Instant updates* creates a channel of type *webhook* named "Home Assistant".
-  - *By hand* (e.g. with a scoped token): enable the diagnostic sensor "Webhook" – it shows the path `/api/webhook/…`. In Yuvomi, as an administrator, add a notification channel of type *Webhook* with the URL `<your Home Assistant URL>` + that path.
+  - *By hand (recommended):* enable the diagnostic sensor "Webhook" – it shows the path `/api/webhook/…`. In Yuvomi, as an administrator, add a notification channel of type *Webhook* with the URL `<your Home Assistant URL>` + that path. The integration keeps working with a scoped token.
+  - *Automatic (convenient alternative):* the option *Instant updates* creates a channel of type *webhook* named "Home Assistant". This requires an administrator token without scopes, which has full access to all family data and stays stored in Home Assistant permanently.
   - Yuvomi refuses channel URLs in private networks unless `NOTIFICATION_ALLOW_PRIVATE_NETWORK=true` is set for the Yuvomi container. Without it the integration uses Home Assistant's external URL (e.g. Nabu Casa) if one is configured – notification texts then travel via that external address.
   - The channel carries *notifications* (reminders, due tasks …), not every data change. Polling remains the backstop.
 - **Rate limit:** Yuvomi allows 300 requests per minute **per IP address**. Behind NAT or a reverse proxy Home Assistant may share this budget with the family's phones. The integration therefore throttles itself to 120 requests per minute and pauses automatically when Yuvomi answers `429`. A full refresh of all default modules needs about a dozen requests.
@@ -140,6 +140,7 @@ Delete the integration under Settings → Devices & services, then remove it in 
 ## Known limitations
 
 - Tested with one household and one Yuvomi instance (Yuvomi 2.79 and 2.84, Docker). Several Yuvomi instances in one Home Assistant should work but are untested.
+- "Today" and "overdue" are calculated in Home Assistant's time zone, while Yuvomi uses the household's time zone. If the two differ, due dates can shift by one day – set both to the same time zone.
 - Some log and error messages are still German only.
 
 ## Maintenance

@@ -59,7 +59,7 @@ Token in Yuvomi unter *Einstellungen → API-Tokens* anlegen. Nur die Scopes fü
 | Budget, Konten, Abos, Kredite, geteilte Ausgaben | `budget:write` | |
 | Belohnungen & Taschengeld | `rewards:write` | |
 | Notizen / Kontakte / Dokumente / Schichtplan / Gesundheit | `notes` / `contacts` / `documents` / `schedule` / `health` | `:read` oder `:write` |
-| **Sofort-Aktualisierung (Kanal wird automatisch angelegt)** | Token eines **Administrators ohne Scopes** | Benachrichtigungskanäle sind Admin-Sache und nicht über Scopes abgedeckt; mit eingeschränktem Token die Option ausschalten und den Kanal von Hand anlegen (siehe unten) |
+| Sofort-Aktualisierung – optional automatische Kanaleinrichtung | Token eines **Administrators ohne Scopes** | nicht empfohlen: Ein solches Token hat vollen Zugriff auf alle Familiendaten und liegt dauerhaft in Home Assistant. Empfohlen: beim eingeschränkten Token bleiben und den Kanal einmal von Hand anlegen (siehe unten) |
 
 ## Module und Entitäten
 
@@ -93,7 +93,7 @@ Einstellungen → Geräte & Dienste → Yuvomi → *Konfigurieren*:
 - **Module**, die geladen werden (abgewählte Module entfernen ihre Entitäten).
 - **Änderungsereignisse auslösen** (`yuvomi_changed`, standardmäßig an).
 - **Abfrageintervall** in Sekunden (Standard 60, 15–3600).
-- **Sofort-Aktualisierung**: Benachrichtigungskanal in Yuvomi automatisch anlegen (braucht ein Admin-Token ohne Scopes).
+- **Sofort-Aktualisierung**: Benachrichtigungskanal in Yuvomi automatisch anlegen. Bequem, braucht aber ein Admin-Token ohne Scopes (voller Zugriff auf alle Familiendaten) – empfohlen ist die Einrichtung von Hand (siehe unten).
 - **Bring-Liste** und **Yuvomi-Einkaufsliste** für den Bring-Abgleich (leer = aus).
 
 ## Aktuell halten
@@ -101,8 +101,8 @@ Einstellungen → Geräte & Dienste → Yuvomi → *Konfigurieren*:
 - **Abfrage** aller aktiven Module im eingestellten Intervall.
 - **Änderungszähler:** Alle 15 s liest die Integration `/api/v1/shopping/versions` (eine sehr kleine Anfrage) und aktualisiert sofort, wenn sich eine Liste geändert hat.
 - **Benachrichtigungskanal (empfohlen):** Yuvomi meldet seine Benachrichtigungen an einen Home-Assistant-Webhook; jede kommt als Ereignis `yuvomi_webhook` an und löst eine sofortige Aktualisierung aus. Kommen die Webhooks zuverlässig an, kann das Abfrageintervall großzügiger sein.
-  - *Automatisch:* Die Option *Sofort-Aktualisierung* legt einen Kanal vom Typ *Webhook* namens „Home Assistant“ an.
-  - *Von Hand* (z. B. mit eingeschränktem Token): Diagnosesensor „Webhook“ aktivieren – er zeigt den Pfad `/api/webhook/…`. In Yuvomi als Administrator einen Benachrichtigungskanal vom Typ *Webhook* mit der Adresse `<deine Home-Assistant-Adresse>` + diesem Pfad anlegen.
+  - *Von Hand (empfohlen):* Diagnosesensor „Webhook“ aktivieren – er zeigt den Pfad `/api/webhook/…`. In Yuvomi als Administrator einen Benachrichtigungskanal vom Typ *Webhook* mit der Adresse `<deine Home-Assistant-Adresse>` + diesem Pfad anlegen. Die Integration läuft dabei weiter mit eingeschränktem Token.
+  - *Automatisch (bequemere Alternative):* Die Option *Sofort-Aktualisierung* legt einen Kanal vom Typ *Webhook* namens „Home Assistant“ an. Dafür braucht es ein Administrator-Token ohne Scopes, das vollen Zugriff auf alle Familiendaten hat und dauerhaft in Home Assistant liegt.
   - Yuvomi lehnt Adressen im Heimnetz ab, solange beim Yuvomi-Container nicht `NOTIFICATION_ALLOW_PRIVATE_NETWORK=true` gesetzt ist. Ohne diese Einstellung nimmt die Integration die externe Home-Assistant-Adresse (z. B. Nabu Casa), falls eine eingerichtet ist – die Benachrichtigungstexte laufen dann über diese externe Adresse.
   - Der Kanal transportiert *Benachrichtigungen* (Erinnerungen, fällige Aufgaben …), nicht jede Datenänderung. Die regelmäßige Abfrage bleibt die Absicherung.
 - **Ratenlimit:** Yuvomi erlaubt 300 Anfragen pro Minute **je IP-Adresse**. Hinter NAT oder Reverse Proxy teilt sich Home Assistant dieses Kontingent womöglich mit den Handys der Familie. Die Integration begrenzt sich deshalb selbst auf 120 Anfragen pro Minute und pausiert automatisch, wenn Yuvomi mit `429` antwortet. Ein vollständiger Abruf aller Standardmodule braucht rund ein Dutzend Anfragen.
@@ -140,6 +140,7 @@ Integration unter Einstellungen → Geräte & Dienste löschen, danach in HACS e
 ## Bekannte Grenzen
 
 - Getestet mit einem Haushalt und einer Yuvomi-Instanz (Yuvomi 2.79 und 2.84, Docker). Mehrere Yuvomi-Instanzen in einem Home Assistant sollten funktionieren, sind aber nicht getestet.
+- „Heute“ und „überfällig“ rechnet die Integration in der Zeitzone von Home Assistant, Yuvomi in der Zeitzone des Haushalts. Weichen beide voneinander ab, können Fälligkeiten um einen Tag verrutschen – beide auf dieselbe Zeitzone stellen.
 - Einige Log- und Fehlermeldungen gibt es bisher nur auf Deutsch.
 
 ## Pflege
