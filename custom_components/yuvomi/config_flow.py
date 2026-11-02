@@ -114,6 +114,8 @@ class YuvomiConfigFlow(ConfigFlow, domain=DOMAIN):
                     CONF_MODULES: user_input[CONF_MODULES],
                     CONF_EVENTS: user_input.get(CONF_EVENTS, True),
                     CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
+                    # Neu eingerichtet: Kanal nicht automatisch anlegen (bräuchte ein Admin-Token ohne Scopes).
+                    CONF_PUSH: False,
                 },
             )
         return self.async_show_form(step_id="modules", data_schema=_modules_schema(None, True))
