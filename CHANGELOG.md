@@ -2,7 +2,7 @@
 
 All notable changes to this integration. Versions follow `MAJOR.MINOR.PATCH`.
 
-## Unreleased (planned 0.5.2)
+## 0.5.2 – 2026-11-02
 
 ### Added
 - **Cleaning plan as a to-do list**: due chores are open items, checking one marks it done in Yuvomi; create, rename and delete chores (description `area · 7` sets area and interval).
@@ -24,6 +24,6 @@ All notable changes to this integration. Versions follow `MAJOR.MINOR.PATCH`.
 - README: note on time zones under *Known limitations*.
 - README: centered header with badges, highlights, maintenance note.
 
-## 0.5.1 – first public version
+## 0.5.1 – 2026-11-02 – first public version
 
 - First public release.
