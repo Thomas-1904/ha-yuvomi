@@ -163,6 +163,8 @@ Integration unter Einstellungen → Geräte & Dienste löschen, danach in HACS e
 
 Dies ist ein Hobbyprojekt, gepflegt in meiner Freizeit nach Zeit und Lust. Issues und Pull Requests sind willkommen, eine Antwortzeit oder Support gibt es aber nicht.
 
+Diese Integration wurde mit KI-Unterstützung (Claude von Anthropic) entwickelt. Konzept, Vorgaben, Tests und Pflege stammen von Thomas-1904; jede Änderung wird vor einem Release geprüft und an einer echten Yuvomi-Instanz getestet.
+
 ## Lizenz
 
 MIT – siehe [LICENSE](LICENSE). Yuvomi selbst ist ein eigenständiges Projekt mit eigener Lizenz. Das Icon ist ein eigener Entwurf für diese Integration.

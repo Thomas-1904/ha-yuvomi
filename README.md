@@ -161,6 +161,8 @@ Delete the integration under Settings → Devices & services, then remove it in 
 
 This is a hobby project, maintained in my spare time as time and interest allow. Issues and pull requests are welcome, but there is no guaranteed response time or support.
 
+This integration was developed with AI assistance (Claude by Anthropic). Concept, requirements, testing and maintenance are by Thomas-1904; every change is reviewed and tested against a real Yuvomi instance before release.
+
 ## License
 
 MIT – see [LICENSE](LICENSE). Yuvomi itself is a separate project with its own license. The icon is an original design for this integration.

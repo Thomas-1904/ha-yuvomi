@@ -2,6 +2,11 @@
 
 All notable changes to this integration. Versions follow `MAJOR.MINOR.PATCH`.
 
+## Unreleased
+
+### Documentation
+- README: note that the integration was developed with AI assistance.
+
 ## 0.5.2 – 2026-11-02
 
 ### Added
