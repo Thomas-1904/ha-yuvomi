@@ -27,6 +27,7 @@ from .const import (
     CONF_BRING_LIST,
     CONF_EVENTS,
     CONF_PUSH,
+    CONF_UPDATE_CHECK,
     CONF_MODULES,
     MODULES,
     CONF_SCAN_INTERVAL,
@@ -224,6 +225,7 @@ class YuvomiOptionsFlow(OptionsFlow):
                     CONF_SCAN_INTERVAL, default=opts.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
                 ): vol.All(vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL, max=3600)),
                 vol.Required(CONF_PUSH, default=opts.get(CONF_PUSH, True)): bool,
+                vol.Required(CONF_UPDATE_CHECK, default=opts.get(CONF_UPDATE_CHECK, True)): bool,
             }
         )
         lists = []

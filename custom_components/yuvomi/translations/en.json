@@ -57,7 +57,8 @@
           "scan_interval": "Polling interval (s)",
           "push_channel": "Instant updates (Yuvomi notifies via webhook)",
           "bring_entity": "Bring list to sync (empty = off)",
-          "bring_list": "Yuvomi shopping list for the Bring sync"
+          "bring_list": "Yuvomi shopping list for the Bring sync",
+          "update_check": "Check for new Yuvomi versions (asks GitHub every 6 h)"
         }
       }
     }
@@ -287,6 +288,11 @@
             }
           }
         }
+      }
+    },
+    "update": {
+      "server": {
+        "name": "Server"
       }
     }
   },

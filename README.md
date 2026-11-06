@@ -84,7 +84,7 @@ Tested against real data: tasks, shopping lists, pantry, family calendar, meal p
 | Waste *(exp.)* | Calendar, next-collection sensors, today/tomorrow binary sensors |
 | Budget, loans, shared expenses *(exp.)* | Expenses/balance this month, per-account and subscription sensors, renew button, remaining loans, shared balance |
 | Rewards, notes, contacts, documents, shifts, health *(exp.)* | Pending redemptions, pinned notes, contacts, expiring documents, shift-plan calendar and shifts today, medications, prevention due, weight, blood pressure, calories today |
-| Always | Event entity *Notification* (one event per Yuvomi notification, usable in the automation editor), refresh button; diagnostic sensors "Webhook" (disabled by default) and "Bring sync" (when configured) |
+| Always | Update entity *Server* (shows when a newer Yuvomi version is available, see Options), event entity *Notification* (one event per Yuvomi notification, usable in the automation editor), refresh button; diagnostic sensors "Webhook" (disabled by default) and "Bring sync" (when configured) |
 
 "Done by": when a task is completed from Home Assistant, the integration looks for the Yuvomi member whose name matches the logged-in Home Assistant user (full or first name).
 
@@ -96,6 +96,7 @@ Settings → Devices & services → Yuvomi → *Configure*:
 - **Fire change events** (`yuvomi_changed`, on by default).
 - **Polling interval** in seconds (default 60, 15–3600).
 - **Instant updates**: create the Yuvomi notification channel automatically. Convenient, but needs an admin token without scopes (full access to all family data) – the manual setup below is recommended.
+- **Check for new Yuvomi versions** (on by default): asks the public GitHub API every 6 hours for the latest Yuvomi release tag and shows an update under Settings → Updates. Nothing about your instance is sent.
 - **Bring list** and **Yuvomi shopping list** for the Bring sync (empty = off).
 
 ## Keeping Home Assistant up to date

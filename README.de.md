@@ -84,7 +84,7 @@ Mit echten Daten getestet: Aufgaben, Einkaufslisten, Vorrat, Familienkalender, E
 | Müll *(exp.)* | Kalender, Sensoren nächste Abholung, Binärsensoren heute/morgen |
 | Budget, Kredite, geteilte Ausgaben *(exp.)* | Ausgaben/Saldo Monat, Sensoren je Konto und Abo, Knopf „Abo verlängern“, Restschuld, Saldo geteilte Ausgaben |
 | Belohnungen, Notizen, Kontakte, Dokumente, Schichten, Gesundheit *(exp.)* | Offene Einlösungen, angeheftete Notizen, Kontakte, ablaufende Dokumente, Kalender Schichtplan und Schichten heute, Medikamente, Vorsorge fällig, Gewicht, Blutdruck, Kalorien heute |
-| Immer | Ereignis-Entität *Benachrichtigung* (ein Ereignis je Yuvomi-Benachrichtigung, im Automationseditor nutzbar), Knopf „Neu laden“; Diagnosesensoren „Webhook“ (standardmäßig aus) und „Bring-Abgleich“ (wenn eingerichtet) |
+| Immer | Update-Entität *Server* (zeigt, wenn eine neuere Yuvomi-Version verfügbar ist, siehe Optionen), Ereignis-Entität *Benachrichtigung* (ein Ereignis je Yuvomi-Benachrichtigung, im Automationseditor nutzbar), Knopf „Neu laden“; Diagnosesensoren „Webhook“ (standardmäßig aus) und „Bring-Abgleich“ (wenn eingerichtet) |
 
 „Erledigt von“: Wird eine Aufgabe in Home Assistant abgehakt, sucht die Integration das Yuvomi-Mitglied, dessen Name zum angemeldeten Home-Assistant-Benutzer passt (voller Name oder Vorname).
 
@@ -96,6 +96,7 @@ Einstellungen → Geräte & Dienste → Yuvomi → *Konfigurieren*:
 - **Änderungsereignisse auslösen** (`yuvomi_changed`, standardmäßig an).
 - **Abfrageintervall** in Sekunden (Standard 60, 15–3600).
 - **Sofort-Aktualisierung**: Benachrichtigungskanal in Yuvomi automatisch anlegen. Bequem, braucht aber ein Admin-Token ohne Scopes (voller Zugriff auf alle Familiendaten) – empfohlen ist die Einrichtung von Hand (siehe unten).
+- **Nach neuen Yuvomi-Versionen suchen** (standardmäßig an): fragt alle 6 Stunden die öffentliche GitHub-Schnittstelle nach der neuesten Yuvomi-Version und zeigt ein Update unter Einstellungen → Updates. Über deine Instanz wird dabei nichts übertragen.
 - **Bring-Liste** und **Yuvomi-Einkaufsliste** für den Bring-Abgleich (leer = aus).
 
 ## Aktuell halten

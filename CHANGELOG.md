@@ -4,6 +4,9 @@ All notable changes to this integration. Versions follow `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+### Added
+- **Yuvomi update check**: an update entity shows when a newer Yuvomi version is available (installed version from the instance, latest from the Yuvomi release tags on GitHub every 6 hours; link to all changes). No install button – Yuvomi is updated where it runs. Can be switched off in the options.
+
 ### Documentation
 - README: note that the integration was developed with AI assistance.
 

@@ -13,6 +13,7 @@ CONF_EVENTS = "fire_events"
 CONF_BRING_ENTITY = "bring_entity"
 CONF_BRING_LIST = "bring_list"
 CONF_PUSH = "push_channel"
+CONF_UPDATE_CHECK = "update_check"
 PUSH_CHANNEL_NAME = "Home Assistant"
 FAST_POLL_SECONDS = 15
 
@@ -25,7 +26,7 @@ SUPPORTED_CLIENT_API = 1
 MIN_APP_VERSION = "2.79.0"
 EXPERIMENTAL = {"waste", "budget", "loans", "split", "rewards", "notes", "contacts", "documents", "schedule", "health"}
 
-PLATFORMS = ["binary_sensor", "button", "calendar", "event", "sensor", "todo"]
+PLATFORMS = ["binary_sensor", "button", "calendar", "event", "sensor", "todo", "update"]
 
 # Module, die einzeln aktiviert werden können: Schlüssel -> (Name, Standard an?)
 MODULES: dict[str, tuple[str, bool]] = {
