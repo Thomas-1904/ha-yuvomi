@@ -37,7 +37,7 @@ Die Integration spricht **ausschließlich über die öffentliche REST-API (`/api
 
 ## Installation
 
-**Marketplace (ab Home Assistant 2026.11):** Einstellungen → Marketplace → *Über Link hinzufügen* → `https://github.com/Thomas-1904/ha-yuvomi` → *Yuvomi (Community)* installieren → Home Assistant neu starten. Für das Hinzufügen per Link muss im Marketplace ein GitHub-Konto verbunden sein (nur Lesezugriff, wird auch für die Update-Prüfung alle 48 h genutzt). Eine Installation aus HACS wird beim Home-Assistant-Update automatisch übernommen.
+**Marketplace (ab Home Assistant 2026.11):** Einstellungen → Marketplace → Repository per Link hinzufügen (englisch *Add from link*) → `https://github.com/Thomas-1904/ha-yuvomi` → *Yuvomi (Community)* installieren → Home Assistant neu starten. Für das Hinzufügen per Link muss im Marketplace ein GitHub-Konto verbunden sein (nur Lesezugriff, wird auch für die Update-Prüfung alle 48 h genutzt). Eine Installation aus HACS wird beim Home-Assistant-Update automatisch übernommen.
 
 **HACS (bis Home Assistant 2026.10):** HACS → ⋮ → Benutzerdefinierte Repositories → `https://github.com/Thomas-1904/ha-yuvomi` hinzufügen (Typ *Integration*) → *Yuvomi (Community)* installieren → Home Assistant neu starten.
 
