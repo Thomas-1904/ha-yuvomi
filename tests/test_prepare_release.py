@@ -28,8 +28,11 @@ def test_bump(tmp_path, monkeypatch):
     current = json.loads((ROOT / "custom_components/yuvomi/manifest.json").read_text())["version"]
     major, minor, patch = map(int, current.split("."))
     new = f"{major}.{minor}.{patch + 1}"
-    if "## Unreleased" not in (ROOT / "CHANGELOG.md").read_text():
-        pytest.skip("no unreleased section")
+    import re
+
+    m = re.search(r"^## Unreleased[^\n]*\n(.*?)(?=^## |\Z)", (ROOT / "CHANGELOG.md").read_text(), re.M | re.S)
+    if not m or not m.group(1).strip():
+        pytest.skip("nothing unreleased (e.g. while a release is being prepared)")
     out = _run(tmp_path, monkeypatch, new)
     assert json.loads((out / "custom_components/yuvomi/manifest.json").read_text())["version"] == new
     assert f'VERSION = "{new}"' in (out / "custom_components/yuvomi/const.py").read_text()
