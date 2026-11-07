@@ -18,6 +18,9 @@ class FakeClient:
     async def post(self, path, body=None):
         self.calls.append(("POST", path, body))
 
+    async def get(self, path, params=None):
+        return {"data": []}
+
     async def delete(self, path):
         self.calls.append(("DELETE", path, None))
 
@@ -34,7 +37,7 @@ def make(yuvomi: list[dict], bring: list[dict], snap: dict | None = None, recent
     sync = object.__new__(BringSync)
     sync.hass = SimpleNamespace(states=SimpleNamespace(get=lambda _e: SimpleNamespace(state="0")))
     client = FakeClient()
-    sync.coordinator = SimpleNamespace(client=client)
+    sync.coordinator = SimpleNamespace(client=client, data=SimpleNamespace(shopping_categories=[]))
     sync.bring = "todo.bring"
     sync.list_id = 1
     sync._snap = snap or {}

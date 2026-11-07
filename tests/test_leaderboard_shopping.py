@@ -1,8 +1,6 @@
 """Leaderboard from Yuvomi data and shopping categories."""
 
 from datetime import datetime
-from unittest.mock import patch
-
 import pytest
 from homeassistant.util import dt as dt_util
 
@@ -14,9 +12,8 @@ MEMBERS = {1: "Alex Doe", 2: "Sam Doe", 3: "Kim"}
 
 
 @pytest.fixture(autouse=True)
-def berlin(hass):
-    hass.config.set_time_zone("Europe/Berlin")
-    dt_util.set_default_time_zone(dt_util.get_time_zone("Europe/Berlin"))
+async def berlin(hass):
+    await hass.config.async_set_time_zone("Europe/Berlin")
 
 
 def test_period_start():
