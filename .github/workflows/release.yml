@@ -12,7 +12,7 @@ jobs:
     name: Attach ZIP
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Build yuvomi.zip
         run: cd custom_components/yuvomi && zip -r ../../yuvomi.zip . -x '__pycache__/*'
       - uses: softprops/action-gh-release@v2

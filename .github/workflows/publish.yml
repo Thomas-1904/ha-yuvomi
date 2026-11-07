@@ -1,0 +1,68 @@
+name: Publish release
+
+# Actions → "Publish release" → Run workflow → enter the version (e.g. 0.5.3).
+# Bumps the version, dates CHANGELOG.md, runs the tests, commits, tags,
+# creates the GitHub release with the changelog section as text and attaches yuvomi.zip.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "New version, e.g. 0.5.3"
+        required: true
+      dry_run:
+        description: "Only check and show the release notes – publish nothing"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency: publish
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements_test.txt
+
+      - name: Prepare version and changelog
+        run: python scripts/prepare_release.py "${{ inputs.version }}" "$RUNNER_TEMP/notes.md"
+
+      - name: Release notes
+        run: cat "$RUNNER_TEMP/notes.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Tests
+        run: |
+          pip install -r requirements_test.txt
+          pytest -q
+
+      - name: Commit and tag
+        if: ${{ !inputs.dry_run }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Release ${{ inputs.version }}"
+          git tag "v${{ inputs.version }}"
+          git push origin main "v${{ inputs.version }}"
+
+      - name: Build yuvomi.zip
+        if: ${{ !inputs.dry_run }}
+        run: cd custom_components/yuvomi && zip -r ../../yuvomi.zip . -x '__pycache__/*'
+
+      - name: Create release
+        if: ${{ !inputs.dry_run }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ inputs.version }}
+          name: ${{ inputs.version }}
+          body_path: ${{ runner.temp }}/notes.md
+          files: yuvomi.zip
+          make_latest: true
