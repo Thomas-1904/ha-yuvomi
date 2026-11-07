@@ -1,10 +1,15 @@
 name: Publish release
 
-# Actions → "Publish release" → Run workflow → enter the version (e.g. 0.5.3).
+# Two ways to start it:
+# - Actions → "Publish release" → Run workflow → enter the version (e.g. 0.5.3)
+# - push a commit that changes the file .github/release-request (first line = version)
 # Bumps the version, dates CHANGELOG.md, runs the tests, commits, tags,
 # creates the GitHub release with the changelog section as text and attaches yuvomi.zip.
 
 on:
+  push:
+    branches: [main]
+    paths: [.github/release-request]
   workflow_dispatch:
     inputs:
       version:
@@ -23,18 +28,25 @@ concurrency: publish
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
     steps:
       - uses: actions/checkout@v7
         with:
           ref: main
-      - uses: actions/setup-python@v6
+      - name: Version
+        id: v
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then v="${{ inputs.version }}"; else v="$(head -n1 .github/release-request | tr -d '[:space:]v')"; fi
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.13"
           cache: pip
           cache-dependency-path: requirements_test.txt
 
       - name: Prepare version and changelog
-        run: python scripts/prepare_release.py "${{ inputs.version }}" "$RUNNER_TEMP/notes.md"
+        run: python scripts/prepare_release.py "${{ steps.v.outputs.version }}" "$RUNNER_TEMP/notes.md"
 
       - name: Release notes
         run: cat "$RUNNER_TEMP/notes.md" >> "$GITHUB_STEP_SUMMARY"
@@ -45,24 +57,24 @@ jobs:
           pytest -q
 
       - name: Commit and tag
-        if: ${{ !inputs.dry_run }}
+        if: env.DRY_RUN != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -am "Release ${{ inputs.version }}"
-          git tag "v${{ inputs.version }}"
-          git push origin main "v${{ inputs.version }}"
+          git commit -am "Release ${{ steps.v.outputs.version }}"
+          git tag "v${{ steps.v.outputs.version }}"
+          git push origin main "v${{ steps.v.outputs.version }}"
 
       - name: Build yuvomi.zip
-        if: ${{ !inputs.dry_run }}
+        if: env.DRY_RUN != 'true'
         run: cd custom_components/yuvomi && zip -r ../../yuvomi.zip . -x '__pycache__/*'
 
       - name: Create release
-        if: ${{ !inputs.dry_run }}
+        if: env.DRY_RUN != 'true'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ inputs.version }}
-          name: ${{ inputs.version }}
+          tag_name: v${{ steps.v.outputs.version }}
+          name: ${{ steps.v.outputs.version }}
           body_path: ${{ runner.temp }}/notes.md
           files: yuvomi.zip
           make_latest: true
