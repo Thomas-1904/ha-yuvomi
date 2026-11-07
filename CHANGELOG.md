@@ -4,6 +4,8 @@ All notable changes to this integration. Versions follow `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+## 0.5.3 – 2026-11-07
+
 ### Added
 - **Create meals and birthdays from the calendars**: new entry in the meal-plan calendar = meal (the start time picks breakfast/lunch/snack/dinner, description = note); new entry in the birthdays calendar = birthday ("Anna (1990)" sets the year of birth). Both can also be deleted there.
 - **Action buttons in the notification blueprint**: task notifications get "Done" (completes the task, recorded as done by the person who tapped) and "Tomorrow" (moves it to tomorrow). Re-import the blueprint to get them.
