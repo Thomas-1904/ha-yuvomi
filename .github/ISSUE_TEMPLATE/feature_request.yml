@@ -1,0 +1,19 @@
+name: Feature request
+description: Suggest an idea for the integration
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like?
+      description: Describe what you want to do in Home Assistant and why.
+    validations:
+      required: true
+  - type: textarea
+    id: yuvomi
+    attributes:
+      label: Yuvomi side
+      description: Which Yuvomi feature or API is involved, if you know?
+  - type: markdown
+    attributes:
+      value: The integration only uses Yuvomi's public API (/api/v1). Things Yuvomi itself does not offer have to be requested from the Yuvomi project.

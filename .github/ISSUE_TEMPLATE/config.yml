@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or idea for Yuvomi itself
+    url: https://github.com/ulsklyc/yuvomi
+    about: Issues with Yuvomi (not with this integration) belong to the Yuvomi project.
+  - name: Home Assistant community forum
+    url: https://community.home-assistant.io/
+    about: General help with Home Assistant and automations.

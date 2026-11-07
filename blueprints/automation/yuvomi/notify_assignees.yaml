@@ -8,6 +8,10 @@ blueprint:
 
     Names must match the Yuvomi member names (first name is enough).
     Leave unused slots empty.
+
+    Task notifications get two buttons on the phone: "Done" completes the task in
+    Yuvomi (recorded as done by the person who tapped it), "Tomorrow" moves it to
+    tomorrow. Requires the Home Assistant Companion app.
   domain: automation
   source_url: https://github.com/Thomas-1904/ha-yuvomi/blob/main/blueprints/automation/yuvomi/notify_assignees.yaml
   input:
@@ -42,6 +46,18 @@ blueprint:
       name: Person 3 – notify action
       default: ""
       selector: {text: {}}
+    action_buttons:
+      name: Action buttons on task notifications
+      default: true
+      selector: {boolean: {}}
+    done_label:
+      name: Label of the "Done" button
+      default: Done
+      selector: {text: {}}
+    tomorrow_label:
+      name: Label of the "Tomorrow" button
+      default: Tomorrow
+      selector: {text: {}}
     click_url:
       name: Open when tapped (optional)
       description: Dashboard path that opens when the notification is tapped, e.g. /lovelace/0
@@ -53,15 +69,22 @@ max: 20
 
 triggers:
   - trigger: event
+    id: notification
     event_type: yuvomi_webhook
     event_data:
       data:
         event: notification
+  - trigger: event
+    id: button
+    event_type: mobile_app_notification_action
 
 actions:
   - variables:
       tasks_list: !input tasks_list
       click_url: !input click_url
+      action_buttons: !input action_buttons
+      done_label: !input done_label
+      tomorrow_label: !input tomorrow_label
       people:
         - name: !input person_1_name
           notify: !input person_1_notify
@@ -69,7 +92,39 @@ actions:
           notify: !input person_2_notify
         - name: !input person_3_name
           notify: !input person_3_notify
-      n: "{{ trigger.event.data.data.notification | default({}) }}"
+      n: "{{ trigger.event.data.data.notification | default({}) if trigger.id == 'notification' else {} }}"
+  - if:
+      - condition: trigger
+        id: button
+    then:
+      - variables:
+          parts: "{{ (trigger.event.data.action | default('')).split('|') }}"
+      - condition: template
+        value_template: "{{ parts | count == 4 and parts[0] == 'YUVOMI' }}"
+      - variables:
+          task: "{{ parts[2] | int(0) }}"
+          who: >-
+            {% set m = state_attr(tasks_list, 'mitglieder') or {} %}
+            {% set ns = namespace(id=none) %}
+            {% for k, v in m.items() if (v | lower | regex_replace(' .*$', '')) == (parts[3] | lower) %}{% set ns.id = k | int %}{% endfor %}
+            {{ ns.id }}
+      - choose:
+          - conditions: "{{ parts[1] == 'DONE' and task > 0 }}"
+            sequence:
+              - action: yuvomi.complete_task
+                data: >-
+                  {% set d = {'task_id': task, 'status': 'done'} %}
+                  {% if who %}{% set d = dict(d, done_by_user_id=who) %}{% endif %}
+                  {{ d }}
+          - conditions: "{{ parts[1] == 'TOMORROW' and task > 0 }}"
+            sequence:
+              - action: yuvomi.update
+                data:
+                  resource: task
+                  id: "{{ task | string }}"
+                  data:
+                    due_date: "{{ (now() + timedelta(days=1)).date() | string }}"
+      - stop: Button handled
   - variables:
       task_id: >-
         {{ (((n.tag | default('') | string) ~ ' ' ~ (n.url | default('') | string))
@@ -85,18 +140,23 @@ actions:
         {% for p in people if p.name and p.notify %}
           {% set first = p.name | lower | regex_replace(' .*$', '') %}
           {% if not (task_id and assigned) or first in assigned %}
-            {% set ns.out = ns.out + [p.notify] %}
+            {% set ns.out = ns.out + [{'notify': p.notify, 'first': first}] %}
           {% endif %}
         {% endfor %}
         {{ ns.out }}
   - repeat:
       for_each: "{{ recipients }}"
       sequence:
-        - action: "{{ repeat.item }}"
+        - action: "{{ repeat.item.notify }}"
           data:
             title: "{{ n.title | default('Yuvomi') }}"
             message: "{{ n.body | default('') }}"
             data: >-
               {% set d = {'group': 'yuvomi', 'tag': 'yuvomi-' ~ (n.tag or (now().timestamp() | int))} %}
               {% if click_url %}{% set d = dict(d, url=click_url, clickAction=click_url) %}{% endif %}
+              {% if action_buttons and task_id %}
+                {% set d = dict(d, actions=[
+                  {'action': 'YUVOMI|DONE|' ~ task_id ~ '|' ~ repeat.item.first, 'title': done_label},
+                  {'action': 'YUVOMI|TOMORROW|' ~ task_id ~ '|' ~ repeat.item.first, 'title': tomorrow_label}]) %}
+              {% endif %}
               {{ d }}

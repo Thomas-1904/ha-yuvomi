@@ -74,12 +74,12 @@ Tested against real data: tasks, shopping lists, pantry, family calendar, meal p
 | Tasks | To-do list (create, edit, complete with "done by", due date/time, description, recurrence; members, assignment, priority, points as attributes), sensors open / overdue / done today / done this week / done 30 days / completion streak / recurring tasks, one sensor per member, overdue binary sensor |
 | Shopping lists | One to-do list per Yuvomi list (`Milk (2 l)` sets the quantity), open-items sensor |
 | Family calendar | Calendar (read, create, delete incl. series), upcoming-events sensor |
-| Meal plan | Calendar (meal type in the description), "meal today" sensor (week as attribute) |
+| Meal plan | Calendar (meal type in the description; new entries create meals – start time picks the meal, description = note), "meal today" sensor (week as attribute) |
 | Recipes | Sensor with all recipes |
 | Pantry | To-do list (due = best-before, completing = used up), sensors items / low / expiring, expired binary sensor |
 | Inventory & maintenance | Inventory sensor, sensor per item with next service, "done" button, deadlines calendar |
 | Cleaning plan & housekeeper | To-do list *Cleaning plan* (due chores open, checking = done; new item with description `area · 7` sets area and interval in days), due-chores sensor (all chores with area, interval, last done, status as attributes), "done" button per chore, housekeeper-present binary sensor |
-| Birthdays | Birthdays calendar, next-birthday sensor |
+| Birthdays | Birthdays calendar (new entries create birthdays; "Anna (1990)" sets the year), next-birthday sensor |
 | Reminders | Pending-reminders sensor, reminder-due binary sensor |
 | Waste *(exp.)* | Calendar, next-collection sensors, today/tomorrow binary sensors |
 | Budget, loans, shared expenses *(exp.)* | Expenses/balance this month, per-account and subscription sensors, renew button, remaining loans, shared balance |
@@ -133,7 +133,7 @@ In the options you can pick any Home Assistant to-do list (e.g. a Bring list fro
 
 | Blueprint | Import |
 |---|---|
-| Notifications to the assigned person – task notifications go only to the people the task is assigned to, everything else to everyone | [![Import](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FThomas-1904%2Fha-yuvomi%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fyuvomi%2Fnotify_assignees.yaml) |
+| Notifications to the assigned person – task notifications go only to the people the task is assigned to (with "Done" / "Tomorrow" buttons), everything else to everyone | [![Import](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FThomas-1904%2Fha-yuvomi%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fyuvomi%2Fnotify_assignees.yaml) |
 | Appliance finished → task – e.g. "Empty the washing machine", no duplicates while one is open | [![Import](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FThomas-1904%2Fha-yuvomi%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fyuvomi%2Fappliance_done_task.yaml) |
 
 ## Troubleshooting

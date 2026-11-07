@@ -1,0 +1,65 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time! This is a hobby project, so please give as much detail as you can.
+        **Never post your API token or URLs with webhook ids.** The diagnostics file redacts them for you.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: integration
+    attributes:
+      label: Integration version
+      description: HACS → Yuvomi (Community), or Settings → Devices & services → Yuvomi
+      placeholder: e.g. 0.5.2
+    validations:
+      required: true
+  - type: input
+    id: yuvomi
+    attributes:
+      label: Yuvomi version
+      placeholder: e.g. 2.85.0
+    validations:
+      required: true
+  - type: input
+    id: ha
+    attributes:
+      label: Home Assistant version
+      placeholder: e.g. 2026.11.0
+    validations:
+      required: true
+  - type: dropdown
+    id: module
+    attributes:
+      label: Affected area
+      multiple: true
+      options:
+        - Setup / options
+        - Tasks
+        - Shopping lists / Bring sync
+        - Pantry
+        - Calendar / meal plan / birthdays
+        - Cleaning plan
+        - Notifications / webhook
+        - Update check
+        - Experimental module
+        - Other
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: Settings → Devices & services → Yuvomi → ⋮ → Download diagnostics, then drag the file in here.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log excerpt
+      description: Settings → System → Logs, filter for "yuvomi". Remove anything personal.
+      render: text

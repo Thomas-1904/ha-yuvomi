@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import date, datetime, time, timedelta
 import logging
+import re
 from typing import Any
 
 from homeassistant.components.calendar import (
@@ -38,6 +39,27 @@ MEAL_NAMES = {
     "snack": "Snack",
 }
 MEAL_NAMES_EN = {"breakfast": "Breakfast", "lunch": "Lunch", "dinner": "Dinner", "snack": "Snack"}
+
+
+def meal_type_for(t: time) -> str:
+    """Start time of a new calendar entry -> Yuvomi meal type."""
+    if t < time(11, 0):
+        return "breakfast"
+    if t < time(15, 0):
+        return "lunch"
+    if t < time(17, 30):
+        return "snack"
+    return "dinner"
+
+
+def split_birth_year(summary: str, description: str | None) -> tuple[str, int | None]:
+    """'Anna (1990)' -> ('Anna', 1990); a 4-digit year in the description works too."""
+    name = summary.strip()
+    m = re.search(r"\s*\((\d{4})\)\s*$", name)
+    if m:
+        return name[: m.start()].strip(), int(m.group(1))
+    m = re.search(r"\b(19|20)\d{2}\b", description or "")
+    return name, int(m.group(0)) if m else None
 
 
 async def async_setup_entry(
@@ -237,9 +259,40 @@ class YuvomiMealsCalendar(YuvomiEntity, CalendarEntity):
     """Essensplan."""
 
     _attr_translation_key = "meals"
+    _attr_supported_features = (
+        CalendarEntityFeature.CREATE_EVENT | CalendarEntityFeature.DELETE_EVENT
+    )
 
     def __init__(self, coordinator: YuvomiCoordinator) -> None:
         super().__init__(coordinator, "calendar", "meals")
+
+    async def async_create_event(self, **kwargs: Any) -> None:
+        """Title = dish; the start time picks the meal (all-day = dinner), description = note."""
+        start = kwargs["dtstart"]
+        body: dict[str, Any] = {"title": (kwargs.get("summary") or "").strip()}
+        if isinstance(start, datetime):
+            local = dt_util.as_local(start)
+            body["date"] = local.date().isoformat()
+            body["meal_type"] = meal_type_for(local.time())
+        else:
+            body["date"] = start.isoformat()
+            body["meal_type"] = "dinner"
+        if kwargs.get("description"):
+            body["notes"] = kwargs["description"]
+        try:
+            await self.coordinator.client.post("/api/v1/meals", body)
+        except YuvomiError as err:
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
+        await self.coordinator.async_request_refresh()
+
+    async def async_delete_event(
+        self, uid: str, recurrence_id: str | None = None, recurrence_range: str | None = None
+    ) -> None:
+        try:
+            await self.coordinator.client.delete(f"/api/v1/meals/{uid}")
+        except YuvomiError as err:
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
+        await self.coordinator.async_request_refresh()
 
     def _meal_to_event(self, m: dict[str, Any]) -> CalendarEvent | None:
         d = parse_date(m.get("date"))
@@ -297,9 +350,43 @@ class YuvomiBirthdayCalendar(YuvomiEntity, CalendarEntity):
     """Geburtstage (aus /birthdays, ganztägig, jährlich)."""
 
     _attr_translation_key = "birthdays"
+    _attr_supported_features = (
+        CalendarEntityFeature.CREATE_EVENT | CalendarEntityFeature.DELETE_EVENT
+    )
 
     def __init__(self, coordinator: YuvomiCoordinator) -> None:
         super().__init__(coordinator, "calendar", "birthdays")
+
+    async def async_create_event(self, **kwargs: Any) -> None:
+        """Title = name, date = birthday. A year in the title or description ('Anna (1990)') sets the year of birth."""
+        start = kwargs["dtstart"]
+        day = dt_util.as_local(start).date() if isinstance(start, datetime) else start
+        name, year = split_birth_year(kwargs.get("summary") or "", kwargs.get("description"))
+        body: dict[str, Any] = {"name": name}
+        if year:
+            body["birth_date"] = day.replace(year=year).isoformat() if not (day.month == 2 and day.day == 29) else f"{year}-02-28"
+            body["year_unknown"] = False
+        else:
+            body["birth_date"] = day.isoformat()
+            body["year_unknown"] = True
+        try:
+            await self.coordinator.client.post("/api/v1/birthdays", body)
+        except YuvomiError as err:
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
+        await self.coordinator.async_request_refresh()
+
+    async def async_delete_event(
+        self, uid: str, recurrence_id: str | None = None, recurrence_range: str | None = None
+    ) -> None:
+        """Deleting any year's entry removes the birthday from Yuvomi."""
+        m = re.match(r"bday-(\d+)", uid or "")
+        if not m:
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="item_not_found")
+        try:
+            await self.coordinator.client.delete(f"/api/v1/birthdays/{m.group(1)}")
+        except YuvomiError as err:
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
+        await self.coordinator.async_request_refresh()
 
     def _events_between(self, frm: date, to: date) -> list[CalendarEvent]:
         out: list[CalendarEvent] = []

@@ -74,12 +74,12 @@ Mit echten Daten getestet: Aufgaben, Einkaufslisten, Vorrat, Familienkalender, E
 | Aufgaben | To-do-Liste (anlegen, bearbeiten, abhaken mit „erledigt von“, Fälligkeit mit Uhrzeit, Beschreibung, Wiederholung; Mitglieder, Zuweisung, Priorität, Punkte als Attribute), Sensoren offen / überfällig / heute erledigt / diese Woche / 30 Tage / Serie / wiederkehrende Aufgaben, ein Sensor je Mitglied, Binärsensor überfällig |
 | Einkaufslisten | Je Yuvomi-Liste eine To-do-Liste („Milch (2 l)“ setzt die Menge), Sensor offene Artikel |
 | Familienkalender | Kalender (lesen, anlegen, löschen inkl. Serien), Sensor anstehende Termine |
-| Essensplan | Kalender (Mahlzeitart in der Beschreibung), Sensor „Essen heute“ (Woche als Attribut) |
+| Essensplan | Kalender (Mahlzeitart in der Beschreibung; neue Einträge legen Essen an – die Uhrzeit bestimmt die Mahlzeit, Beschreibung = Notiz), Sensor „Essen heute“ (Woche als Attribut) |
 | Rezepte | Sensor mit allen Rezepten |
 | Vorrat | To-do-Liste (Fälligkeit = MHD, abhaken = aufgebraucht), Sensoren Artikel / knapp / läuft ab, Binärsensor abgelaufen |
 | Inventar & Wartung | Sensor Inventar, Sensor je Gegenstand mit nächster Wartung, Knopf „Erledigt“, Kalender „Fristen & Wartung“ |
 | Putzplan & Haushaltshilfe | To-do-Liste *Putzplan* (fällige Aufgaben offen, abhaken = erledigt; neuer Eintrag mit Beschreibung `Bereich · 7` setzt Bereich und Intervall in Tagen), Sensor fällige Putzaufgaben (alle Aufgaben mit Bereich, Intervall, zuletzt erledigt, Status als Attribute), Knopf „Erledigt“ je Aufgabe, Binärsensor Haushaltshilfe da |
-| Geburtstage | Kalender, Sensor nächster Geburtstag |
+| Geburtstage | Kalender (neue Einträge legen Geburtstage an; „Anna (1990)“ setzt das Geburtsjahr), Sensor nächster Geburtstag |
 | Erinnerungen | Sensor fällige Erinnerungen, Binärsensor Erinnerung fällig |
 | Müll *(exp.)* | Kalender, Sensoren nächste Abholung, Binärsensoren heute/morgen |
 | Budget, Kredite, geteilte Ausgaben *(exp.)* | Ausgaben/Saldo Monat, Sensoren je Konto und Abo, Knopf „Abo verlängern“, Restschuld, Saldo geteilte Ausgaben |
@@ -133,7 +133,7 @@ In den Optionen lässt sich eine beliebige To-do-Liste aus Home Assistant (z. B.
 
 | Blueprint | Importieren |
 |---|---|
-| Benachrichtigungen an die zugewiesene Person – Aufgaben-Benachrichtigungen nur an die zugewiesenen Personen, alles andere an alle | [![Importieren](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FThomas-1904%2Fha-yuvomi%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fyuvomi%2Fnotify_assignees.yaml) |
+| Benachrichtigungen an die zugewiesene Person – Aufgaben-Benachrichtigungen nur an die zugewiesenen Personen (mit Knöpfen „Erledigt“ / „Morgen“), alles andere an alle | [![Importieren](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FThomas-1904%2Fha-yuvomi%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fyuvomi%2Fnotify_assignees.yaml) |
 | Gerät fertig → Aufgabe – z. B. „Waschmaschine ausräumen“, keine Doppelten, solange eine offen ist | [![Importieren](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FThomas-1904%2Fha-yuvomi%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fyuvomi%2Fappliance_done_task.yaml) |
 
 Die Blueprints sind englisch beschriftet.
