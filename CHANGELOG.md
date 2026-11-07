@@ -13,6 +13,9 @@ All notable changes to this integration. Versions follow `MAJOR.MINOR.PATCH`.
 ### Documentation
 - README: note that the integration was developed with AI assistance.
 
+### Maintenance
+- Automated release workflow and Dependabot updates for the GitHub Actions.
+
 ## 0.5.2 – 2026-11-02
 
 ### Added
