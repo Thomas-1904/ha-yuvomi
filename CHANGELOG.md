@@ -4,6 +4,8 @@ All notable changes to this integration. Versions follow `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+## 0.5.5 – 2026-11-07
+
 ### Added
 - **Leaderboard and points per member**, based on Yuvomi: points from Yuvomi's reward ledger when the Rewards module is used, otherwise the points of completed tasks (credited to whoever Yuvomi records as having done them). Sensor *Leaderboard* (this week's leader; week and month ranking as attributes) and *Points this week <name>* per member.
 - **Shopping lists sorted like Yuvomi**: items grouped by category in Yuvomi's category order. New items from Home Assistant, Bring and `add_shopping_item` get a category automatically – from the household's own history in Yuvomi, otherwise from a built-in list of common articles (German/English). New service `yuvomi.sort_shopping` sorts existing uncategorized items.
