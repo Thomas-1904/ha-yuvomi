@@ -4,6 +4,9 @@ All notable changes to this integration. Versions follow `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+### Documentation
+- README: installation via the Home Assistant Marketplace (2026.11+).
+
 ## 0.5.5 – 2026-11-07
 
 ### Added

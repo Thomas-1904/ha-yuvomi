@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="https://github.com/Thomas-1904/ha-yuvomi/releases"><img alt="Release" src="https://img.shields.io/github/v/release/Thomas-1904/ha-yuvomi?color=7c3aed"></a>
-  <a href="https://hacs.xyz"><img alt="HACS" src="https://img.shields.io/badge/HACS-Custom-7c3aed"></a>
+  <a href="https://hacs.xyz"><img alt="HACS / Marketplace" src="https://img.shields.io/badge/HACS%20%2F%20Marketplace-Custom-7c3aed"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/Thomas-1904/ha-yuvomi?color=7c3aed"></a>
 </p>
 
@@ -37,7 +37,9 @@ The integration talks to Yuvomi **only through the public REST API (`/api/v1`)**
 
 ## Installation
 
-**HACS (custom repository):** HACS → ⋮ → Custom repositories → add `https://github.com/Thomas-1904/ha-yuvomi` (type *Integration*) → install *Yuvomi (Community)* → restart Home Assistant.
+**Marketplace (Home Assistant 2026.11 and newer):** Settings → Marketplace → *Add from link* → `https://github.com/Thomas-1904/ha-yuvomi` → install *Yuvomi (Community)* → restart Home Assistant. Adding a link needs a GitHub account connected in the Marketplace (read-only, also used to check for updates every 48 h). An installation from HACS carries over automatically when you upgrade Home Assistant.
+
+**HACS (Home Assistant 2026.10 and older):** HACS → ⋮ → Custom repositories → add `https://github.com/Thomas-1904/ha-yuvomi` (type *Integration*) → install *Yuvomi (Community)* → restart Home Assistant.
 
 **Manual:** download `yuvomi.zip` from the latest [release](https://github.com/Thomas-1904/ha-yuvomi/releases), unpack it to `/config/custom_components/yuvomi`, restart Home Assistant.
 
