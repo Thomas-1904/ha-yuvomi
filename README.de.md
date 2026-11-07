@@ -19,7 +19,7 @@ Bindet den selbst gehosteten Familienplaner [Yuvomi](https://github.com/ulsklyc/
 
 Die Integration spricht **ausschließlich über die öffentliche REST-API (`/api/v1`)** mit einem API-Token und den unten genannten Scopes – die Schnittstelle, die der Yuvomi-Entwickler stabil zusagt. Jeder genutzte Endpunkt steht in Yuvomis OpenAPI-Spezifikation; interne Endpunkte, Datenbank oder Dateien werden nie angefasst. Fragen zu dieser Integration bitte hier im Repository stellen, nicht beim Yuvomi-Projekt.
 
-**Inhalt:** [Auf einen Blick](#auf-einen-blick) · [Voraussetzungen](#voraussetzungen) · [Installation](#installation) · [API-Token und Scopes](#api-token-und-scopes) · [Module und Entitäten](#module-und-entitäten) · [Optionen](#optionen) · [Aktuell halten](#aktuell-halten) · [Bring-Abgleich (optional)](#bring-abgleich-optional) · [Dienste](#dienste) · [Ereignisse](#ereignisse) · [Blueprints](#blueprints) · [Fehlersuche](#fehlersuche) · [Diagnose](#diagnose) · [Entfernen](#entfernen) · [Bekannte Grenzen](#bekannte-grenzen) · [Pflege](#pflege) · [Lizenz](#lizenz)
+**Inhalt:** [Auf einen Blick](#auf-einen-blick) · [Voraussetzungen](#voraussetzungen) · [Installation](#installation) · [API-Token und Scopes](#api-token-und-scopes) · [Module und Entitäten](#module-und-entitäten) · [Optionen](#optionen) · [Aktuell halten](#aktuell-halten) · [Bring-Abgleich (optional)](#bring-abgleich-optional) · [Dienste](#dienste) · [Ereignisse](#ereignisse) · [Sprachassistent (Assist)](#sprachassistent-assist) · [Blueprints](#blueprints) · [Fehlersuche](#fehlersuche) · [Diagnose](#diagnose) · [Entfernen](#entfernen) · [Bekannte Grenzen](#bekannte-grenzen) · [Pflege](#pflege) · [Lizenz](#lizenz)
 
 ## Auf einen Blick
 
@@ -71,10 +71,10 @@ Mit echten Daten getestet: Aufgaben, Einkaufslisten, Vorrat, Familienkalender, E
 
 | Modul | Entitäten |
 |---|---|
-| Aufgaben | To-do-Liste (anlegen, bearbeiten, abhaken mit „erledigt von“, Fälligkeit mit Uhrzeit, Beschreibung, Wiederholung; Mitglieder, Zuweisung, Priorität, Punkte als Attribute), Sensoren offen / überfällig / heute erledigt / diese Woche / 30 Tage / Serie / wiederkehrende Aufgaben, ein Sensor je Mitglied, Binärsensor überfällig |
+| Aufgaben | To-do-Liste (anlegen, bearbeiten, abhaken mit „erledigt von“, Fälligkeit mit Uhrzeit, Beschreibung, Wiederholung; Mitglieder, Zuweisung, Priorität, Punkte als Attribute), zusätzlich je Mitglied eine eigene To-do-Liste („Aufgaben Sam“: nur deren Aufgaben; neue Einträge werden zugewiesen), Sensoren offen / überfällig / heute erledigt / diese Woche / 30 Tage / Serie / wiederkehrende Aufgaben, ein Sensor je Mitglied, Binärsensor überfällig |
 | Einkaufslisten | Je Yuvomi-Liste eine To-do-Liste („Milch (2 l)“ setzt die Menge), Sensor offene Artikel |
-| Familienkalender | Kalender (lesen, anlegen, löschen inkl. Serien), Sensor anstehende Termine |
-| Essensplan | Kalender (Mahlzeitart in der Beschreibung; neue Einträge legen Essen an – die Uhrzeit bestimmt die Mahlzeit, Beschreibung = Notiz), Sensor „Essen heute“ (Woche als Attribut) |
+| Familienkalender | Kalender (lesen, anlegen, bearbeiten, löschen inkl. Serien; wiederkehrende Termine werden in Yuvomi bearbeitet), Sensor anstehende Termine |
+| Essensplan | Kalender (Mahlzeitart in der Beschreibung; neue Einträge legen Essen an – die Uhrzeit bestimmt die Mahlzeit, Beschreibung = Notiz), Knopf *Zutaten der Woche auf die Einkaufsliste* (nächste 7 Tage, auf die Bring-Liste falls eingerichtet, sonst die erste Liste), Sensor „Essen heute“ (Woche als Attribut) |
 | Rezepte | Sensor mit allen Rezepten |
 | Vorrat | To-do-Liste (Fälligkeit = MHD, abhaken = aufgebraucht), Sensoren Artikel / knapp / läuft ab, Binärsensor abgelaufen |
 | Inventar & Wartung | Sensor Inventar, Sensor je Gegenstand mit nächster Wartung, Knopf „Erledigt“, Kalender „Fristen & Wartung“ |
@@ -129,6 +129,14 @@ In den Optionen lässt sich eine beliebige To-do-Liste aus Home Assistant (z. B.
 - `yuvomi_webhook` für eingehende Benachrichtigungen: `data.notification` mit `title`, `body`, `url`, `tag`, `priority`. Der Payload nennt keinen Empfänger – Benachrichtigungen an einzelne Handys zu verteilen, geht über die Blueprint unten oder eine eigene Automation.
 - Die Ereignis-Entität *Benachrichtigung* löst dieselben Benachrichtigungen als Ereignistyp `notification` aus, mit `title`, `body`, `url`, `tag`, `priority`, `task_id` (aus Tag/URL gelesen) und `sent_at`.
 
+## Sprachassistent (Assist)
+
+Die Entitäten funktionieren mit dem Sprachassistenten von Home Assistant, sobald sie freigegeben sind (Einstellungen → Sprachassistenten → Freigeben):
+
+- **Eingebaute Sätze:** „Setz Milch auf die Einkaufsliste“ und ähnliche Befehle zum Hinzufügen funktionieren mit allen Einkaufs- und Aufgabenlisten.
+- **Mit einem KI-Gesprächsagenten** (z. B. OpenAI, Google, Anthropic, Ollama) auch freie Fragen wie „Was gibt es heute zu essen?“ (Essensplan-Kalender), „Welche Putzaufgaben sind fällig?“ (Putzplan-Liste), „Was muss Sam heute erledigen?“ (Aufgabenliste je Person) oder „Wann hat Anna Geburtstag?“ (Geburtstagskalender).
+- Tipp: Den Listen in den Entitätseinstellungen eindeutige Aliase geben (z. B. „Einkaufsliste“), damit Assist sie findet.
+
 ## Blueprints
 
 | Blueprint | Importieren |
@@ -140,7 +148,7 @@ Die Blueprints sind englisch beschriftet.
 
 ## Fehlersuche
 
-- **Ein Modul bleibt leer:** Dem Token fehlt der Scope des Moduls (siehe Tabelle) oder das Modul ist in Yuvomi nicht aktiv.
+- **Ein Modul bleibt leer:** Dem Token fehlt der Scope des Moduls (siehe Tabelle) oder das Modul ist in Yuvomi nicht aktiv. Ein Hinweis unter Einstellungen → Reparaturen nennt die betroffenen Module und die nötigen Scopes.
 - **Einrichtung scheitert mit „fehlender Scope“:** Das Token braucht mindestens `family:read`.
 - **Reparatur-Hinweis „Update empfohlen“ / „zu alt“:** Yuvomi aktualisieren; der Hinweis verschwindet beim nächsten Start.
 - **Keine Sofort-Aktualisierung:** Im Log nach „Yuvomi-Push nicht eingerichtet“ suchen (Kanal konnte nicht angelegt werden – Token ohne Admin-Rechte oder keine erreichbare Adresse) und den Kanalstatus in Yuvomi prüfen.

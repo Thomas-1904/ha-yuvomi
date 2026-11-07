@@ -19,7 +19,7 @@ Connects the self-hosted family planner [Yuvomi](https://github.com/ulsklyc/yuvo
 
 The integration talks to Yuvomi **only through the public REST API (`/api/v1`)** with an API token and the scopes listed below – the interface the Yuvomi maintainer commits to keeping stable. Every endpoint it uses is part of Yuvomi's OpenAPI specification; internal endpoints, the database or files are never touched. Questions about this integration go to this repository, not to the Yuvomi project.
 
-**Contents:** [Highlights](#highlights) · [Requirements](#requirements) · [Installation](#installation) · [API token and scopes](#api-token-and-scopes) · [Modules and entities](#modules-and-entities) · [Options](#options) · [Keeping Home Assistant up to date](#keeping-home-assistant-up-to-date) · [Bring sync (optional)](#bring-sync-optional) · [Services](#services) · [Events](#events) · [Blueprints](#blueprints) · [Troubleshooting](#troubleshooting) · [Diagnostics](#diagnostics) · [Removal](#removal) · [Known limitations](#known-limitations) · [Maintenance](#maintenance) · [License](#license)
+**Contents:** [Highlights](#highlights) · [Requirements](#requirements) · [Installation](#installation) · [API token and scopes](#api-token-and-scopes) · [Modules and entities](#modules-and-entities) · [Options](#options) · [Keeping Home Assistant up to date](#keeping-home-assistant-up-to-date) · [Bring sync (optional)](#bring-sync-optional) · [Services](#services) · [Events](#events) · [Voice assistant (Assist)](#voice-assistant-assist) · [Blueprints](#blueprints) · [Troubleshooting](#troubleshooting) · [Diagnostics](#diagnostics) · [Removal](#removal) · [Known limitations](#known-limitations) · [Maintenance](#maintenance) · [License](#license)
 
 ## Highlights
 
@@ -71,10 +71,10 @@ Tested against real data: tasks, shopping lists, pantry, family calendar, meal p
 
 | Module | Entities |
 |---|---|
-| Tasks | To-do list (create, edit, complete with "done by", due date/time, description, recurrence; members, assignment, priority, points as attributes), sensors open / overdue / done today / done this week / done 30 days / completion streak / recurring tasks, one sensor per member, overdue binary sensor |
+| Tasks | To-do list (create, edit, complete with "done by", due date/time, description, recurrence; members, assignment, priority, points as attributes), one extra to-do list per member ("Tasks Sam": only their tasks; new items are assigned to them), sensors open / overdue / done today / done this week / done 30 days / completion streak / recurring tasks, one sensor per member, overdue binary sensor |
 | Shopping lists | One to-do list per Yuvomi list (`Milk (2 l)` sets the quantity), open-items sensor |
-| Family calendar | Calendar (read, create, delete incl. series), upcoming-events sensor |
-| Meal plan | Calendar (meal type in the description; new entries create meals – start time picks the meal, description = note), "meal today" sensor (week as attribute) |
+| Family calendar | Calendar (read, create, edit, delete incl. series; recurring events are edited in Yuvomi), upcoming-events sensor |
+| Meal plan | Calendar (meal type in the description; new entries create meals – start time picks the meal, description = note), button *Ingredients of the week to shopping list* (next 7 days, to the Bring-synced list if set, else the first list), "meal today" sensor (week as attribute) |
 | Recipes | Sensor with all recipes |
 | Pantry | To-do list (due = best-before, completing = used up), sensors items / low / expiring, expired binary sensor |
 | Inventory & maintenance | Inventory sensor, sensor per item with next service, "done" button, deadlines calendar |
@@ -129,6 +129,14 @@ In the options you can pick any Home Assistant to-do list (e.g. a Bring list fro
 - `yuvomi_webhook` for incoming notifications: `data.notification` with `title`, `body`, `url`, `tag`, `priority`. The payload names no recipient – to send notifications to individual phones, use the blueprint below or your own automation.
 - The event entity *Notification* fires the same notifications as event type `notification` with `title`, `body`, `url`, `tag`, `priority`, `task_id` (parsed from tag/url) and `sent_at`.
 
+## Voice assistant (Assist)
+
+The integration's entities work with Home Assistant's voice assistant out of the box once they are exposed (Settings → Voice assistants → Expose):
+
+- **Built-in sentences:** "Add milk to the shopping list" and similar commands for adding items work with every shopping and task to-do list.
+- **With an AI conversation agent** (e.g. OpenAI, Google, Anthropic, Ollama) also free questions such as "What's for dinner today?" (meal-plan calendar), "Which chores are due?" (cleaning-plan list), "What does Sam have to do today?" (per-member task list) or "When is Anna's birthday?" (birthdays calendar).
+- Tip: give the lists clear aliases (e.g. "shopping list") in the entity settings so Assist finds them.
+
 ## Blueprints
 
 | Blueprint | Import |
@@ -138,7 +146,7 @@ In the options you can pick any Home Assistant to-do list (e.g. a Bring list fro
 
 ## Troubleshooting
 
-- **A module stays empty:** the token lacks that module's scope (see table) or the module is not active in Yuvomi.
+- **A module stays empty:** the token lacks that module's scope (see table) or the module is not active in Yuvomi. A repair notice under Settings → Repairs names the modules and the scopes they need.
 - **Setup fails with "missing scope":** the token needs at least `family:read`.
 - **Repair notice "Yuvomi update recommended" / "too old":** update Yuvomi; the notice disappears on the next start.
 - **No instant updates:** check the log for "Yuvomi-Push nicht eingerichtet" (channel could not be created – token without admin rights, or no reachable URL) and Yuvomi's channel status.

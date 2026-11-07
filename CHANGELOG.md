@@ -4,6 +4,15 @@ All notable changes to this integration. Versions follow `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+### Added
+- **Task list per member**: one extra to-do list per family member with only their tasks; new items are assigned to that member.
+- **Edit family events** from Home Assistant (title, time, description, location). Recurring events are still edited in Yuvomi.
+- **Repair notice for missing permissions**: enabled modules that get no data are listed under Settings → Repairs with the scopes the token needs.
+- **Button "Ingredients of the week to shopping list"** (next 7 days; to the Bring-synced list if configured).
+
+### Documentation
+- README: voice assistant (Assist) section.
+
 ## 0.5.4 – 2026-11-07
 
 ### Maintenance

@@ -60,6 +60,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: YuvomiConfigEntry) -> bo
 
     _remove_disabled_module_entities(hass, entry, coordinator.modules)
     hass.async_create_task(_check_version(hass, entry, client), eager_start=False)
+    _check_scopes(hass, entry, coordinator)
+    entry.async_on_unload(coordinator.async_add_listener(lambda: _check_scopes(hass, entry, coordinator)))
 
     wid = entry.data.get(CONF_WEBHOOK_ID)
     if not wid and entry.options.get(CONF_PUSH, True):
@@ -100,6 +102,38 @@ async def async_setup_entry(hass: HomeAssistant, entry: YuvomiConfigEntry) -> bo
         await sync.async_start()
         entry.async_on_unload(sync.async_stop)
     return True
+
+
+# Integration module -> Yuvomi token scope
+MODULE_SCOPES = {
+    "tasks": "tasks", "shopping": "shopping", "calendar": "calendar", "meals": "meals", "recipes": "meals",
+    "pantry": "pantry", "inventory": "inventory", "housekeeping": "housekeeping", "waste": "waste",
+    "birthdays": "calendar", "reminders": "calendar", "budget": "budget", "loans": "budget", "split": "budget",
+    "rewards": "rewards", "notes": "notes", "contacts": "contacts", "documents": "documents",
+    "schedule": "schedule", "health": "health",
+}
+
+
+def _check_scopes(hass: HomeAssistant, entry: ConfigEntry, coordinator: YuvomiCoordinator) -> None:
+    """Repair notice when enabled modules get no data because the token lacks their scope."""
+    if not coordinator.last_update_success or coordinator.data is None:
+        return
+    ok = coordinator.data.modules_ok
+    missing = sorted(m for m in coordinator.modules if m in MODULE_SCOPES and ok.get(m) is False)
+    if ok.get("dashboard") is False and "calendar" in coordinator.modules and "calendar" not in missing:
+        missing.append("calendar")
+    issue_id = f"missing_scope_{entry.entry_id}"
+    if not missing:
+        ir.async_delete_issue(hass, DOMAIN, issue_id)
+        return
+    scopes = sorted({f"{MODULE_SCOPES[m]}:write" for m in missing})
+    if "calendar" in missing:
+        scopes.append("dashboard:read")
+    ir.async_create_issue(
+        hass, DOMAIN, issue_id, is_fixable=False, severity=ir.IssueSeverity.WARNING,
+        translation_key="missing_scope",
+        translation_placeholders={"modules": ", ".join(missing), "scopes": ", ".join(scopes)},
+    )
 
 
 async def _check_version(hass: HomeAssistant, entry: ConfigEntry, client: YuvomiClient) -> None:

@@ -276,6 +276,9 @@
     "button": {
       "refresh": {
         "name": "Neu laden"
+      },
+      "meals_to_shopping": {
+        "name": "Zutaten der Woche auf die Einkaufsliste"
       }
     },
     "event": {
@@ -1024,6 +1027,10 @@
     "newer_api": {
       "title": "Neuere Yuvomi-Schnittstelle",
       "description": "Yuvomi {version} meldet die Schnittstellen-Generation {api}, diese Integration kennt nur Generation 1. Es kann funktionieren, ist aber nicht getestet – bitte nach einem Update der Integration schauen."
+    },
+    "missing_scope": {
+      "title": "Dem Yuvomi-Token fehlen Berechtigungen",
+      "description": "Diese aktiven Module bekommen keine Daten von Yuvomi: **{modules}**.\n\nDem API-Token in Yuvomi (Einstellungen → API-Tokens) diese Scopes geben: `{scopes}` (oder das Modul in Yuvomi einschalten, falls es dort aus ist) – oder die Module in den Optionen der Integration abschalten. Der Hinweis verschwindet von selbst, sobald Daten ankommen."
     }
   },
   "exceptions": {
@@ -1068,6 +1075,9 @@
     },
     "chore_not_found": {
       "message": "Putzaufgabe nicht gefunden."
+    },
+    "occurrence_edit": {
+      "message": "Wiederkehrende Termine lassen sich nur in Yuvomi selbst ändern."
     }
   }
 }

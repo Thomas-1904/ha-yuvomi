@@ -90,6 +90,20 @@ async def async_setup_entry(
     _add_new_lists()
     entry.async_on_unload(coordinator.async_add_listener(_add_new_lists))
 
+    known_members: set[int] = set()
+
+    @callback
+    def _add_members() -> None:
+        if not module_available(coordinator, "tasks"):
+            return
+        new = [YuvomiMemberTasksTodo(coordinator, mid) for mid in sorted(set(coordinator.data.members) - known_members)]
+        known_members.update(coordinator.data.members)
+        if new:
+            async_add_entities(new)
+
+    _add_members()
+    entry.async_on_unload(coordinator.async_add_listener(_add_members))
+
 
 def _raise(err: YuvomiError) -> None:
     raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
@@ -265,6 +279,65 @@ class YuvomiTasksTodo(YuvomiEntity, TodoListEntity):
         await self.coordinator.async_request_refresh()
 
 
+def assignees(t: dict[str, Any]) -> list[int]:
+    """Member ids a task is assigned to (Yuvomi returns either list or single id)."""
+    ids = [u.get("id") for u in t.get("assigned_users") or [] if isinstance(u, dict)]
+    if not ids:
+        a = t.get("assigned_to")
+        a = a if isinstance(a, list) else ([a] if a else [])
+        ids = [x.get("id") if isinstance(x, dict) else x for x in a]
+    out = []
+    for i in ids:
+        try:
+            out.append(int(i))
+        except (TypeError, ValueError):
+            continue
+    return out
+
+
+class YuvomiMemberTasksTodo(YuvomiTasksTodo):
+    """Tasks of one family member. New items are assigned to that member."""
+
+    _attr_translation_key = None
+
+    def __init__(self, coordinator: YuvomiCoordinator, member_id: int) -> None:
+        YuvomiEntity.__init__(self, coordinator, f"todo_member_{member_id}", "tasks")
+        self._mid = member_id
+
+    @property
+    def name(self) -> str:
+        who = self.coordinator.data.members.get(self._mid, str(self._mid))
+        return f"{txt(self.hass, 'Aufgaben', 'Tasks')} {str(who).split(' ')[0]}"
+
+    @property
+    def available(self) -> bool:
+        return super().available and self._mid in self.coordinator.data.members
+
+    @property
+    def todo_items(self) -> list[TodoItem]:
+        mine = {str(t.get("id")) for t in self.coordinator.data.tasks if self._mid in assignees(t)}
+        return [i for i in super().todo_items if i.uid in mine]
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        return {"member_id": self._mid}
+
+    async def async_create_todo_item(self, item: TodoItem) -> None:
+        body: dict[str, Any] = {"title": item.summary, "assigned_to": [self._mid]}
+        due_d, due_t = self._split_due(item.due)
+        if due_d:
+            body["due_date"] = due_d
+        if due_t:
+            body["due_time"] = due_t
+        if item.description:
+            body["description"] = item.description
+        try:
+            await self.coordinator.client.post("/api/v1/tasks", body)
+        except YuvomiError as err:
+            _raise(err)
+        await self.coordinator.async_request_refresh()
+
+
 class YuvomiShoppingTodo(YuvomiEntity, TodoListEntity):
     """Eine Yuvomi-Einkaufsliste."""
 
@@ -290,7 +363,8 @@ class YuvomiShoppingTodo(YuvomiEntity, TodoListEntity):
     @property
     def name(self) -> str:
         lst = self._list
-        return f"Einkauf {lst.get('name')}" if lst else f"Einkauf {self._list_id}"
+        prefix = txt(self.hass, "Einkauf", "Shopping")
+        return f"{prefix} {lst.get('name')}" if lst else f"{prefix} {self._list_id}"
 
     @property
     def available(self) -> bool:

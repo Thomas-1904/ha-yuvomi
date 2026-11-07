@@ -18,7 +18,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
-from .api import YuvomiError, as_list
+from .api import YuvomiError, as_list, unwrap
 from .const import DOMAIN
 from .util import is_de, txt
 from .coordinator import YuvomiCoordinator, parse_date
@@ -38,6 +38,7 @@ MEAL_NAMES = {
     "dinner": "Abendessen",
     "snack": "Snack",
 }
+_EVENT_FIELDS = {"title", "description", "location", "start_datetime", "end_datetime", "all_day", "color", "recurrence_rule", "assigned_to", "calendar_id", "reminder_minutes"}
 MEAL_NAMES_EN = {"breakfast": "Breakfast", "lunch": "Lunch", "dinner": "Dinner", "snack": "Snack"}
 
 
@@ -134,7 +135,9 @@ class YuvomiFamilyCalendar(YuvomiEntity, CalendarEntity):
 
     _attr_translation_key = "family"
     _attr_supported_features = (
-        CalendarEntityFeature.CREATE_EVENT | CalendarEntityFeature.DELETE_EVENT
+        CalendarEntityFeature.CREATE_EVENT
+        | CalendarEntityFeature.DELETE_EVENT
+        | CalendarEntityFeature.UPDATE_EVENT
     )
 
     def __init__(self, coordinator: YuvomiCoordinator) -> None:
@@ -166,7 +169,8 @@ class YuvomiFamilyCalendar(YuvomiEntity, CalendarEntity):
             if e.end_datetime_local > start_date and e.start_datetime_local < end_date
         ]
 
-    async def async_create_event(self, **kwargs: Any) -> None:
+    @staticmethod
+    def _body(kwargs: dict[str, Any]) -> dict[str, Any]:
         start = kwargs["dtstart"]
         end = kwargs["dtend"]
         all_day = not isinstance(start, datetime)
@@ -185,8 +189,35 @@ class YuvomiFamilyCalendar(YuvomiEntity, CalendarEntity):
             body["end_datetime"] = dt_util.as_local(end).strftime("%Y-%m-%dT%H:%M")
         if kwargs.get("rrule"):
             body["recurrence_rule"] = kwargs["rrule"]
+        return body
+
+    async def async_create_event(self, **kwargs: Any) -> None:
+        body = self._body(kwargs)
         try:
             await self.coordinator.client.post("/api/v1/calendar", body)
+        except YuvomiError as err:
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
+        await self.coordinator.async_request_refresh()
+
+    async def async_update_event(
+        self,
+        uid: str,
+        event: dict[str, Any],
+        recurrence_id: str | None = None,
+        recurrence_range: str | None = None,
+    ) -> None:
+        """Change a single (non-recurring) event. Recurring events are edited in Yuvomi."""
+        if recurrence_id:
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="occurrence_edit")
+        client = self.coordinator.client
+        changes = self._body(event)
+        if "rrule" not in event or event.get("rrule") is None:
+            changes.pop("recurrence_rule", None)
+        try:
+            current = unwrap(await client.get(f"/api/v1/calendar/{uid}"))
+            body = {k: v for k, v in (current if isinstance(current, dict) else {}).items() if k in _EVENT_FIELDS}
+            body.update({k: v for k, v in changes.items() if v is not None or k in ("description", "location")})
+            await client.put(f"/api/v1/calendar/{uid}", body)
         except YuvomiError as err:
             raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
         await self.coordinator.async_request_refresh()
@@ -438,7 +469,7 @@ class YuvomiShiftCalendar(YuvomiEntity, CalendarEntity):
         if d is None:
             return None
         st = s.get("shift_type") if isinstance(s.get("shift_type"), dict) else s
-        name = st.get("name") or s.get("shift_type_name") or "Schicht"
+        name = st.get("name") or s.get("shift_type_name") or txt(self.hass, "Schicht", "Shift")
         who = s.get("user_name") or self.coordinator.member_name(s.get("user_id"))
         start_t, end_t = st.get("start_time"), st.get("end_time")
         tz = dt_util.get_default_time_zone()

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
 from typing import Any
 
 from homeassistant.components.button import ButtonEntity
@@ -10,9 +11,10 @@ from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.util import dt as dt_util
 
 from .api import YuvomiError
-from .const import DOMAIN
+from .const import CONF_BRING_LIST, DOMAIN
 from .coordinator import YuvomiCoordinator
 from .util import txt
 from .entity import YuvomiEntity, module_available
@@ -22,7 +24,10 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     coordinator: YuvomiCoordinator = entry.runtime_data
-    async_add_entities([YuvomiRefreshButton(coordinator)])
+    base: list[ButtonEntity] = [YuvomiRefreshButton(coordinator)]
+    if module_available(coordinator, "meals") and module_available(coordinator, "shopping"):
+        base.append(YuvomiMealsToShoppingButton(coordinator))
+    async_add_entities(base)
 
     known: set[int] = set()
 
@@ -179,6 +184,37 @@ class YuvomiInventoryDoneButton(YuvomiEntity, ButtonEntity):
         try:
             await self.coordinator.client.post(
                 f"/api/v1/inventory/items/{self._id}/dates/{nd.get('id')}/complete"
+            )
+        except YuvomiError as err:
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
+        await self.coordinator.async_request_refresh()
+
+
+class YuvomiMealsToShoppingButton(YuvomiEntity, ButtonEntity):
+    """Put the ingredients of the next 7 days' meals on the shopping list."""
+
+    _attr_translation_key = "meals_to_shopping"
+    _attr_icon = "mdi:cart-arrow-down"
+
+    def __init__(self, coordinator: YuvomiCoordinator) -> None:
+        super().__init__(coordinator, "meals_to_shopping", "meals")
+
+    def _list_id(self) -> Any:
+        lists = self.coordinator.data.shopping_lists
+        wanted = self.coordinator.config_entry.options.get(CONF_BRING_LIST)
+        if wanted and any(str(lst.get("id")) == str(wanted) for lst in lists):
+            return wanted
+        return lists[0]["id"] if lists else None
+
+    async def async_press(self) -> None:
+        lid = self._list_id()
+        if lid is None:
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="no_shopping_list")
+        today = dt_util.now().date()
+        try:
+            await self.coordinator.client.post(
+                f"/api/v1/shopping/{lid}/import-meal-plan",
+                {"from": today.isoformat(), "to": (today + timedelta(days=6)).isoformat()},
             )
         except YuvomiError as err:
             raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
