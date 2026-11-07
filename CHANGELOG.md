@@ -4,6 +4,8 @@ All notable changes to this integration. Versions follow `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+## 0.5.4 – 2026-11-07
+
 ### Maintenance
 - HACS validation now runs without any ignored checks (brand images ship inside the integration).
 

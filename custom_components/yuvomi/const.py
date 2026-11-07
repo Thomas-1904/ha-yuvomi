@@ -4,7 +4,7 @@ from __future__ import annotations
 
 DOMAIN = "yuvomi"
 MANUFACTURER = "Yuvomi"
-VERSION = "0.5.3"
+VERSION = "0.5.4"
 
 CONF_SCAN_INTERVAL = "scan_interval"
 CONF_WEBHOOK_ID = "webhook_id"
