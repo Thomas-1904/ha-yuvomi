@@ -24,6 +24,7 @@ from .api import YuvomiError
 from .const import DOMAIN
 from .coordinator import YuvomiCoordinator, parse_date
 from .entity import YuvomiEntity, module_available, unique_prefix
+from .shopping_cat import category_for
 from .util import rrule_text, txt
 
 _LOGGER = logging.getLogger(__name__)
@@ -373,10 +374,25 @@ class YuvomiShoppingTodo(YuvomiEntity, TodoListEntity):
     def _items(self) -> list[dict[str, Any]]:
         return self.coordinator.data.shopping_items.get(self._list_id, [])
 
+    def _sorted_items(self) -> list[dict[str, Any]]:
+        """Open items grouped by category in Yuvomi's category order, then the item order within it."""
+        order = {
+            str(c.get("name") or "").casefold(): (c.get("sort_order") if c.get("sort_order") is not None else i)
+            for i, c in enumerate(self.coordinator.data.shopping_categories)
+        }
+        def key(it: dict[str, Any]) -> tuple:
+            return (
+                bool(it.get("is_checked")),
+                order.get(str(it.get("category") or "").casefold(), 10_000),
+                it.get("sort_order") if it.get("sort_order") is not None else 10_000,
+                str(it.get("name") or "").casefold(),
+            )
+        return sorted(self._items(), key=key)
+
     @property
     def todo_items(self) -> list[TodoItem]:
         result = []
-        for it in self._items():
+        for it in self._sorted_items():
             name = it.get("name") or ""
             qty = it.get("quantity")
             summary = f"{name} ({qty})" if qty else name
@@ -418,6 +434,11 @@ class YuvomiShoppingTodo(YuvomiEntity, TodoListEntity):
     async def async_create_todo_item(self, item: TodoItem) -> None:
         name, qty = self._split(item.summary or "")
         body: dict[str, Any] = {"name": name}
+        cat = await category_for(
+            self.coordinator.client, name, [str(c.get("name")) for c in self.coordinator.data.shopping_categories]
+        )
+        if cat:
+            body["category"] = cat
         if qty:
             body["quantity"] = qty
         if item.description:

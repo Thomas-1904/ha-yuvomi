@@ -12,9 +12,10 @@ from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.util import dt as dt_util
 
-from .api import YuvomiError, unwrap
+from .api import YuvomiError, as_list, unwrap
 from .const import DOMAIN, RESOURCES
 from .coordinator import YuvomiCoordinator
+from .shopping_cat import category_for, is_uncategorized
 
 BASE = {vol.Optional("config_entry_id"): cv.string}
 OPT = SupportsResponse.OPTIONAL
@@ -168,7 +169,31 @@ def register_services(hass: HomeAssistant) -> None:
     async def add_shopping_item(call: ServiceCall) -> None:
         c = _coordinator(hass, call)
         body = {k: call.data[k] for k in ("name", "quantity", "category", "notes") if k in call.data}
+        if "category" not in body:
+            cat = await category_for(c.client, body["name"], [str(x.get("name")) for x in c.data.shopping_categories])
+            if cat:
+                body["category"] = cat
         await _run(c, "POST", f"/api/v1/shopping/{_first_list(c, call.data.get('list_id'))}/items", body)
+
+    async def sort_shopping(call: ServiceCall) -> ServiceResponse:
+        """Give uncategorized items of a list (or all lists) a category – same logic as for new items."""
+        c = _coordinator(hass, call)
+        lists = [call.data["list_id"]] if call.data.get("list_id") else [x["id"] for x in c.data.shopping_lists]
+        names = [str(x.get("name")) for x in c.data.shopping_categories]
+        changed: list[dict[str, Any]] = []
+        try:
+            for lid in lists:
+                for it in as_list(await c.client.get(f"/api/v1/shopping/{lid}/items"), "items"):
+                    if not is_uncategorized(it.get("category")):
+                        continue
+                    cat = await category_for(c.client, str(it.get("name") or ""), names)
+                    if cat:
+                        await c.client.patch(f"/api/v1/shopping/items/{it['id']}", {"category": cat})
+                        changed.append({"name": it.get("name"), "category": cat})
+        except YuvomiError as err:
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
+        await c.async_request_refresh()
+        return {"changed": changed}
 
     async def clear_checked(call: ServiceCall) -> None:
         c = _coordinator(hass, call)
@@ -211,6 +236,7 @@ def register_services(hass: HomeAssistant) -> None:
         vol.Optional("category"): cv.string, vol.Optional("notes"): cv.string,
     })
     reg("clear_checked", clear_checked, {vol.Optional("list_id"): vol.Coerce(int)})
+    reg("sort_shopping", sort_shopping, {vol.Optional("list_id"): vol.Coerce(int)}, SupportsResponse.OPTIONAL)
     reg("add_meal", add_meal, {
         vol.Required("date"): cv.date, vol.Required("title"): cv.string,
         vol.Optional("meal_type", default="dinner"): vol.In(["breakfast", "lunch", "dinner", "snack"]),

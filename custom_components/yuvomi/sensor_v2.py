@@ -15,6 +15,7 @@ from homeassistant.util import dt as dt_util
 from .coordinator import YuvomiCoordinator, YuvomiData, first, parse_date
 from .entity import YuvomiEntity, module_available
 from .sensor import YuvomiSensorDescription
+from . import leaderboard
 from .util import rrule_text, txt
 
 
@@ -169,7 +170,27 @@ def _recurring(d: YuvomiData) -> list[dict[str, Any]]:
     return sorted(out, key=lambda x: x["faellig"] or "9999")
 
 
+def _rank(d: YuvomiData, period: str) -> list[dict[str, Any]]:
+    return leaderboard.ranking(d.members, d.completions, d.ledger, period)
+
+
+def _leader(d: YuvomiData) -> str | None:
+    rows = _rank(d, "week")
+    if not rows or (rows[0]["punkte"] == 0 and rows[0]["aufgaben"] == 0):
+        return None
+    return rows[0]["name"]
+
+
 SENSORS_V2: tuple[YuvomiSensorDescription, ...] = (
+    YuvomiSensorDescription(
+        key="leaderboard", translation_key="leaderboard", module="tasks", icon="mdi:podium-gold",
+        value_fn=_leader,
+        attrs_fn=lambda d: {
+            "woche": _rank(d, "week"),
+            "monat": _rank(d, "month"),
+            "quelle": leaderboard.source(d.ledger),
+        },
+    ),
     YuvomiSensorDescription(
         key="tasks_done_week", translation_key="tasks_done_week", module="tasks", icon="mdi:check-decagram-outline",
         state_class=SensorStateClass.MEASUREMENT,
@@ -588,6 +609,48 @@ class MemberSensor(YuvomiEntity, SensorEntity):
         }
 
 
+class MemberPointsSensor(YuvomiEntity, SensorEntity):
+    """Points of one member this week (Yuvomi ledger or completed task points)."""
+
+    _attr_icon = "mdi:star-four-points-circle-outline"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(self, coordinator: YuvomiCoordinator, mid: int) -> None:
+        super().__init__(coordinator, f"member_points_{mid}", "tasks")
+        self._mid = mid
+
+    @property
+    def name(self) -> str:
+        who = str(self.coordinator.data.members.get(self._mid, self._mid)).split(" ")[0]
+        return f"{txt(self.hass, 'Punkte Woche', 'Points this week')} {who}"
+
+    @property
+    def native_unit_of_measurement(self) -> str:
+        return txt(self.hass, "Punkte", "points")
+
+    @property
+    def available(self) -> bool:
+        return super().available and self._mid in self.coordinator.data.members
+
+    def _row(self, period: str) -> dict[str, Any]:
+        return next((r for r in _rank(self.coordinator.data, period) if r["id"] == self._mid), {})
+
+    @property
+    def native_value(self) -> int | None:
+        return self._row("week").get("punkte")
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        w, m = self._row("week"), self._row("month")
+        return {
+            "platz_woche": w.get("platz"),
+            "aufgaben_woche": w.get("aufgaben"),
+            "punkte_monat": m.get("punkte"),
+            "aufgaben_monat": m.get("aufgaben"),
+            "platz_monat": m.get("platz"),
+        }
+
+
 DYNAMIC: list[tuple[type[_DynamicSensor], str]] = [
     (InventorySensor, "inventory"),
     (SubscriptionSensor, "subscriptions"),
@@ -621,6 +684,9 @@ def setup_dynamic(
                 if f"member:{mid}" not in known:
                     known.add(f"member:{mid}")
                     new.append(MemberSensor(coordinator, mid))
+                if f"mpoints:{mid}" not in known:
+                    known.add(f"mpoints:{mid}")
+                    new.append(MemberPointsSensor(coordinator, mid))
         if module_available(coordinator, "rewards"):
             b = coordinator.data.rewards.get("balances")
             ids = (

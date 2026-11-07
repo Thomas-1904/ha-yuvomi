@@ -251,6 +251,9 @@
       },
       "bring_sync": {
         "name": "Bring sync"
+      },
+      "leaderboard": {
+        "name": "Leaderboard"
       }
     },
     "binary_sensor": {
@@ -1011,6 +1014,20 @@
         "config_entry_id": {
           "name": "Yuvomi",
           "description": "Optional"
+        }
+      }
+    },
+    "sort_shopping": {
+      "name": "Sort shopping items into categories",
+      "description": "Gives items without a category (\"Other\") one – from the household's own history in Yuvomi or a list of common articles.",
+      "fields": {
+        "list_id": {
+          "name": "List ID (empty = all lists)",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instance",
+          "description": "Only with several instances"
         }
       }
     }

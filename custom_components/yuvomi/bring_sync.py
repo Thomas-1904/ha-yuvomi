@@ -24,6 +24,7 @@ from homeassistant.helpers.storage import Store
 
 from .api import YuvomiError, as_list
 from .const import DOMAIN
+from .shopping_cat import category_for
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -256,6 +257,12 @@ class BringSync:
                     body: dict[str, Any] = {"name": " ".join(str(b.get("summary")).split())}
                     if q:
                         body["quantity"] = q
+                    cat = await category_for(
+                        self.coordinator.client, body["name"],
+                        [str(c.get("name")) for c in self.coordinator.data.shopping_categories],
+                    )
+                    if cat:
+                        body["category"] = cat
                     await self.coordinator.client.post(f"/api/v1/shopping/{self.list_id}/items", body)
                     stats["yuvomi_neu"] += 1
                     new_snap[k] = {"o": True, "q": q}

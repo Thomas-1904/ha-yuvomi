@@ -65,6 +65,8 @@ class YuvomiData:
     loans_summary: dict[str, Any] = field(default_factory=dict)
     split: dict[str, Any] = field(default_factory=dict)
     rewards: dict[str, Any] = field(default_factory=dict)
+    ledger: list[dict[str, Any]] = field(default_factory=list)
+    shopping_categories: list[dict[str, Any]] = field(default_factory=list)
     money: list[dict[str, Any]] = field(default_factory=list)
     reminders: list[dict[str, Any]] = field(default_factory=list)
     notes: list[dict[str, Any]] = field(default_factory=list)
@@ -169,6 +171,10 @@ class YuvomiCoordinator(DataUpdateCoordinator[YuvomiData]):
             if self.on("shopping"):
                 d.shopping_lists = as_list(await self._opt("shopping", d, "/api/v1/shopping"), "lists")
                 if d.modules_ok.get("shopping"):
+                    try:
+                        d.shopping_categories = as_list(await self.client.get("/api/v1/shopping/categories"), "categories")
+                    except YuvomiApiError:
+                        d.shopping_categories = prev.shopping_categories
                     versions = as_list(await self.client.get("/api/v1/shopping/versions"))
                     d.shopping_versions = {
                         int(v["list_id"]): v.get("version") for v in versions if v.get("list_id") is not None
@@ -236,6 +242,13 @@ class YuvomiCoordinator(DataUpdateCoordinator[YuvomiData]):
                 d.rewards = r if isinstance(r, dict) else {}
                 m = unwrap(await self._opt("rewards", d, "/api/v1/rewards/money"))
                 d.money = as_list(m, "accounts")
+                if d.modules_ok.get("rewards"):
+                    try:
+                        d.ledger = as_list(
+                            await self.client.get("/api/v1/rewards/ledger", params={"limit": 500}), "entries", "ledger"
+                        )
+                    except YuvomiApiError:
+                        d.ledger = prev.ledger
 
             if self.on("reminders"):
                 d.reminders = as_list(await self._opt("reminders", d, "/api/v1/reminders/pending"), "reminders")

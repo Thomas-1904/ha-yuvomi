@@ -71,8 +71,8 @@ Tested against real data: tasks, shopping lists, pantry, family calendar, meal p
 
 | Module | Entities |
 |---|---|
-| Tasks | To-do list (create, edit, complete with "done by", due date/time, description, recurrence; members, assignment, priority, points as attributes), one extra to-do list per member ("Tasks Sam": only their tasks; new items are assigned to them), sensors open / overdue / done today / done this week / done 30 days / completion streak / recurring tasks, one sensor per member, overdue binary sensor |
-| Shopping lists | One to-do list per Yuvomi list (`Milk (2 l)` sets the quantity), open-items sensor |
+| Tasks | To-do list (create, edit, complete with "done by", due date/time, description, recurrence; members, assignment, priority, points as attributes), one extra to-do list per member ("Tasks Sam": only their tasks; new items are assigned to them), sensors open / overdue / done today / done this week / done 30 days / completion streak / recurring tasks, one sensor per member, *Leaderboard* (leader of the week; week/month ranking with points and tasks as attributes) and *Points this week* per member – from Yuvomi's reward ledger if used, otherwise from the points of completed tasks, overdue binary sensor |
+| Shopping lists | One to-do list per Yuvomi list (`Milk (2 l)` sets the quantity; items grouped by category in Yuvomi's order; new items get a category automatically – from the household's history in Yuvomi or a list of common articles), open-items sensor |
 | Family calendar | Calendar (read, create, edit, delete incl. series; recurring events are edited in Yuvomi), upcoming-events sensor |
 | Meal plan | Calendar (meal type in the description; new entries create meals – start time picks the meal, description = note), button *Ingredients of the week to shopping list* (next 7 days, to the Bring-synced list if set, else the first list), "meal today" sensor (week as attribute) |
 | Recipes | Sensor with all recipes |
@@ -118,7 +118,7 @@ In the options you can pick any Home Assistant to-do list (e.g. a Bring list fro
 
 - **Generic** for every resource of the API: `yuvomi.create`, `yuvomi.get`, `yuvomi.update` (merges with the current record), `yuvomi.delete`. Sub-objects take a `parent_id` (e.g. the list for `shopping_item`).
 - **Tasks & household:** `add_task`, `complete_task`, `complete_housekeeping`, `housekeeper_check`, `complete_inventory_date`, `dismiss_reminder`.
-- **Shopping & food:** `add_shopping_item`, `clear_checked`, `add_meal`, `meals_to_shopping`, `pantry_to_shopping`, `shopping_to_pantry`, `sync_bring`.
+- **Shopping & food:** `add_shopping_item`, `clear_checked`, `sort_shopping` (give uncategorized items a category), `add_meal`, `meals_to_shopping`, `pantry_to_shopping`, `shopping_to_pantry`, `sync_bring`.
 - **Experimental modules:** `add_budget_entry`, `renew_subscription`, `loan_payment`, `reward_bonus`, `redeem_reward`, `pin_note`, `check_note_item`, `add_vital`, `medication_dose`, `add_nutrition`.
 - `yuvomi.refresh` forces a refresh.
 - `yuvomi.api_request` calls any `/api/v1/…` path directly. **This is an escape hatch:** only what is part of Yuvomi's OpenAPI specification is a supported contract – anything beyond it may break with any Yuvomi update.

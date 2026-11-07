@@ -251,6 +251,9 @@
       },
       "bring_sync": {
         "name": "Bring-Abgleich"
+      },
+      "leaderboard": {
+        "name": "Rangliste"
       }
     },
     "binary_sensor": {
@@ -1011,6 +1014,20 @@
         "config_entry_id": {
           "name": "Yuvomi",
           "description": "Optional"
+        }
+      }
+    },
+    "sort_shopping": {
+      "name": "Einkaufsartikel einsortieren",
+      "description": "Gibt Artikeln ohne Kategorie („Sonstiges“) eine – aus dem eigenen Verlauf in Yuvomi oder einer Liste gängiger Artikel.",
+      "fields": {
+        "list_id": {
+          "name": "Listen-ID (leer = alle Listen)",
+          "description": ""
+        },
+        "config_entry_id": {
+          "name": "Instanz",
+          "description": "Nur bei mehreren Instanzen"
         }
       }
     }

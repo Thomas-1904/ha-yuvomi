@@ -71,8 +71,8 @@ Mit echten Daten getestet: Aufgaben, Einkaufslisten, Vorrat, Familienkalender, E
 
 | Modul | Entitäten |
 |---|---|
-| Aufgaben | To-do-Liste (anlegen, bearbeiten, abhaken mit „erledigt von“, Fälligkeit mit Uhrzeit, Beschreibung, Wiederholung; Mitglieder, Zuweisung, Priorität, Punkte als Attribute), zusätzlich je Mitglied eine eigene To-do-Liste („Aufgaben Sam“: nur deren Aufgaben; neue Einträge werden zugewiesen), Sensoren offen / überfällig / heute erledigt / diese Woche / 30 Tage / Serie / wiederkehrende Aufgaben, ein Sensor je Mitglied, Binärsensor überfällig |
-| Einkaufslisten | Je Yuvomi-Liste eine To-do-Liste („Milch (2 l)“ setzt die Menge), Sensor offene Artikel |
+| Aufgaben | To-do-Liste (anlegen, bearbeiten, abhaken mit „erledigt von“, Fälligkeit mit Uhrzeit, Beschreibung, Wiederholung; Mitglieder, Zuweisung, Priorität, Punkte als Attribute), zusätzlich je Mitglied eine eigene To-do-Liste („Aufgaben Sam“: nur deren Aufgaben; neue Einträge werden zugewiesen), Sensoren offen / überfällig / heute erledigt / diese Woche / 30 Tage / Serie / wiederkehrende Aufgaben, ein Sensor je Mitglied, *Rangliste* (Wochensieger; Woche/Monat mit Punkten und Aufgaben als Attribute) und *Punkte Woche* je Mitglied – aus Yuvomis Punktekonto, falls genutzt, sonst aus den Punkten erledigter Aufgaben, Binärsensor überfällig |
+| Einkaufslisten | Je Yuvomi-Liste eine To-do-Liste („Milch (2 l)“ setzt die Menge; nach Kategorien in Yuvomis Reihenfolge sortiert; neue Artikel bekommen automatisch eine Kategorie – aus dem eigenen Verlauf in Yuvomi oder einer Liste gängiger Artikel), Sensor offene Artikel |
 | Familienkalender | Kalender (lesen, anlegen, bearbeiten, löschen inkl. Serien; wiederkehrende Termine werden in Yuvomi bearbeitet), Sensor anstehende Termine |
 | Essensplan | Kalender (Mahlzeitart in der Beschreibung; neue Einträge legen Essen an – die Uhrzeit bestimmt die Mahlzeit, Beschreibung = Notiz), Knopf *Zutaten der Woche auf die Einkaufsliste* (nächste 7 Tage, auf die Bring-Liste falls eingerichtet, sonst die erste Liste), Sensor „Essen heute“ (Woche als Attribut) |
 | Rezepte | Sensor mit allen Rezepten |
@@ -118,7 +118,7 @@ In den Optionen lässt sich eine beliebige To-do-Liste aus Home Assistant (z. B.
 
 - **Generisch** für jede Ressource der API: `yuvomi.create`, `yuvomi.get`, `yuvomi.update` (führt mit dem aktuellen Stand zusammen), `yuvomi.delete`. Unterobjekte brauchen eine `parent_id` (z. B. die Liste bei `shopping_item`).
 - **Aufgaben & Haushalt:** `add_task`, `complete_task`, `complete_housekeeping`, `housekeeper_check`, `complete_inventory_date`, `dismiss_reminder`.
-- **Einkauf & Essen:** `add_shopping_item`, `clear_checked`, `add_meal`, `meals_to_shopping`, `pantry_to_shopping`, `shopping_to_pantry`, `sync_bring`.
+- **Einkauf & Essen:** `add_shopping_item`, `clear_checked`, `sort_shopping` (Artikeln ohne Kategorie eine geben), `add_meal`, `meals_to_shopping`, `pantry_to_shopping`, `shopping_to_pantry`, `sync_bring`.
 - **Experimentelle Module:** `add_budget_entry`, `renew_subscription`, `loan_payment`, `reward_bonus`, `redeem_reward`, `pin_note`, `check_note_item`, `add_vital`, `medication_dose`, `add_nutrition`.
 - `yuvomi.refresh` erzwingt einen Abruf.
 - `yuvomi.api_request` ruft beliebige `/api/v1/…`-Pfade direkt auf. **Das ist ein Notausgang:** Verbindlich ist nur, was in Yuvomis OpenAPI-Spezifikation steht – alles darüber hinaus kann mit jedem Yuvomi-Update brechen.

@@ -920,3 +920,15 @@ sync_bring:
       selector:
         config_entry:
           integration: yuvomi
+
+sort_shopping:
+  fields:
+    list_id:
+      selector:
+        number:
+          min: 1
+          mode: box
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: yuvomi
