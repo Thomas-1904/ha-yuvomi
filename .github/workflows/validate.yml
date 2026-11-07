@@ -15,8 +15,6 @@ jobs:
       - uses: hacs/action@main
         with:
           category: integration
-          # Ein Logo im home-assistant/brands-Repo fehlt noch.
-          ignore: brands
 
   hassfest:
     name: Hassfest
