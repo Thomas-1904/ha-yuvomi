@@ -15,6 +15,6 @@ jobs:
       - uses: actions/checkout@v7
       - name: Build yuvomi.zip
         run: cd custom_components/yuvomi && zip -r ../../yuvomi.zip . -x '__pycache__/*'
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: yuvomi.zip
