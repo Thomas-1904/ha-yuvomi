@@ -37,9 +37,9 @@ Die Integration spricht **ausschließlich über die öffentliche REST-API (`/api
 
 ## Installation
 
-**Marketplace (ab Home Assistant 2026.11):** Einstellungen → Marketplace → Repository per Link hinzufügen (englisch *Add from link*) → `https://github.com/Thomas-1904/ha-yuvomi` → *Yuvomi (Community)* installieren → Home Assistant neu starten. Für das Hinzufügen per Link muss im Marketplace ein GitHub-Konto verbunden sein (nur Lesezugriff, wird auch für die Update-Prüfung alle 48 h genutzt). Eine Installation aus HACS wird beim Home-Assistant-Update automatisch übernommen.
+**Marketplace (ab Home Assistant 2026.11):** Einstellungen → Marketplace → nach **Yuvomi** suchen → *Yuvomi (Community)* installieren → Home Assistant neu starten. Solange die Integration noch nicht im Standardkatalog steht, stattdessen als benutzerdefiniertes Repository hinzufügen: Einstellungen → Marketplace → Repository per Link hinzufügen (englisch *Add from link*) → `https://github.com/Thomas-1904/ha-yuvomi` → *Yuvomi (Community)* installieren → Home Assistant neu starten. Für das Hinzufügen per Link muss im Marketplace ein GitHub-Konto verbunden sein (nur Lesezugriff, wird auch für die Update-Prüfung alle 48 h genutzt). Eine Installation aus HACS wird beim Home-Assistant-Update automatisch übernommen.
 
-**HACS (bis Home Assistant 2026.10):** HACS → ⋮ → Benutzerdefinierte Repositories → `https://github.com/Thomas-1904/ha-yuvomi` hinzufügen (Typ *Integration*) → *Yuvomi (Community)* installieren → Home Assistant neu starten.
+**HACS (bis Home Assistant 2026.10):** HACS → nach **Yuvomi** suchen → installieren → Home Assistant neu starten. Solange sie noch nicht gelistet ist: HACS → ⋮ → Benutzerdefinierte Repositories → `https://github.com/Thomas-1904/ha-yuvomi` hinzufügen (Typ *Integration*) → *Yuvomi (Community)* installieren → Home Assistant neu starten.
 
 **Manuell:** `yuvomi.zip` aus dem neuesten [Release](https://github.com/Thomas-1904/ha-yuvomi/releases) laden, nach `/config/custom_components/yuvomi` entpacken, Home Assistant neu starten.
 
@@ -86,7 +86,7 @@ Mit echten Daten getestet: Aufgaben, Einkaufslisten, Vorrat, Familienkalender, E
 | Müll *(exp.)* | Kalender, Sensoren nächste Abholung, Binärsensoren heute/morgen |
 | Budget, Kredite, geteilte Ausgaben *(exp.)* | Ausgaben/Saldo Monat, Sensoren je Konto und Abo, Knopf „Abo verlängern“, Restschuld, Saldo geteilte Ausgaben |
 | Belohnungen, Notizen, Kontakte, Dokumente, Schichten, Gesundheit *(exp.)* | Offene Einlösungen, angeheftete Notizen, Kontakte, ablaufende Dokumente, Kalender Schichtplan und Schichten heute, Medikamente, Vorsorge fällig, Gewicht, Blutdruck, Kalorien heute |
-| Immer | Update-Entität *Server* (zeigt, wenn eine neuere Yuvomi-Version verfügbar ist, siehe Optionen), Ereignis-Entität *Benachrichtigung* (ein Ereignis je Yuvomi-Benachrichtigung, im Automationseditor nutzbar), Knopf „Neu laden“; Diagnosesensoren „Webhook“ (standardmäßig aus) und „Bring-Abgleich“ (wenn eingerichtet) |
+| Immer | Update-Entität *Server* (zeigt, wenn eine neuere Yuvomi-Version verfügbar ist, siehe Optionen), Ereignis-Entität *Benachrichtigung* (ein Ereignis je Yuvomi-Benachrichtigung, im Automationseditor nutzbar), Knopf „Neu laden“; Diagnosesensor „Bring-Abgleich“ (wenn eingerichtet) |
 
 „Erledigt von“: Wird eine Aufgabe in Home Assistant abgehakt, sucht die Integration das Yuvomi-Mitglied, dessen Name zum angemeldeten Home-Assistant-Benutzer passt (voller Name oder Vorname).
 
@@ -106,7 +106,7 @@ Einstellungen → Geräte & Dienste → Yuvomi → *Konfigurieren*:
 - **Abfrage** aller aktiven Module im eingestellten Intervall.
 - **Änderungszähler:** Alle 15 s liest die Integration `/api/v1/shopping/versions` (eine sehr kleine Anfrage) und aktualisiert sofort, wenn sich eine Liste geändert hat.
 - **Benachrichtigungskanal (empfohlen):** Yuvomi meldet seine Benachrichtigungen an einen Home-Assistant-Webhook; jede kommt als Ereignis `yuvomi_webhook` an und löst eine sofortige Aktualisierung aus. Kommen die Webhooks zuverlässig an, kann das Abfrageintervall großzügiger sein.
-  - *Von Hand (empfohlen):* Diagnosesensor „Webhook“ aktivieren – er zeigt den Pfad `/api/webhook/…`. In Yuvomi als Administrator einen Benachrichtigungskanal vom Typ *Webhook* mit der Adresse `<deine Home-Assistant-Adresse>` + diesem Pfad anlegen. Die Integration läuft dabei weiter mit eingeschränktem Token.
+  - *Von Hand (empfohlen):* Einstellungen → Geräte & Dienste → Yuvomi → *Konfigurieren* öffnen. Der Dialog zeigt die Webhook-Adresse. In Yuvomi als Administrator einen Benachrichtigungskanal vom Typ *Webhook* mit dieser Adresse anlegen. Die Integration läuft dabei weiter mit eingeschränktem Token. Die Adresse wie ein Passwort behandeln – sie erscheint nur für Administratoren in diesem Dialog, nie in einer Entität. Ist sie doch einmal nach außen gelangt, dort *Neue Webhook-Adresse erzeugen* anhaken und die neue Adresse in Yuvomi eintragen.
   - *Automatisch (bequemere Alternative):* Die Option *Sofort-Aktualisierung* legt einen Kanal vom Typ *Webhook* namens „Home Assistant“ an. Dafür braucht es ein Administrator-Token ohne Scopes, das vollen Zugriff auf alle Familiendaten hat und dauerhaft in Home Assistant liegt.
   - Yuvomi lehnt Adressen im Heimnetz ab, solange beim Yuvomi-Container nicht `NOTIFICATION_ALLOW_PRIVATE_NETWORK=true` gesetzt ist. Ohne diese Einstellung nimmt die Integration die externe Home-Assistant-Adresse (z. B. Nabu Casa), falls eine eingerichtet ist – die Benachrichtigungstexte laufen dann über diese externe Adresse.
   - Der Kanal transportiert *Benachrichtigungen* (Erinnerungen, fällige Aufgaben …), nicht jede Datenänderung. Die regelmäßige Abfrage bleibt die Absicherung.

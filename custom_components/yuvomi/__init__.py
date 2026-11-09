@@ -59,6 +59,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: YuvomiConfigEntry) -> bo
     entry.runtime_data = coordinator
 
     _remove_disabled_module_entities(hass, entry, coordinator.modules)
+    # Up to 0.5.5 a diagnostic sensor showed the webhook path; the id is a secret, so drop that entity.
+    reg = er.async_get(hass)
+    if old := reg.async_get_entity_id("sensor", DOMAIN, unique_prefix(entry.entry_id, "core") + "webhook"):
+        reg.async_remove(old)
     hass.async_create_task(_check_version(hass, entry, client), eager_start=False)
     _check_scopes(hass, entry, coordinator)
     entry.async_on_unload(coordinator.async_add_listener(lambda: _check_scopes(hass, entry, coordinator)))

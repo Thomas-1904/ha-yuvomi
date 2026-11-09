@@ -50,7 +50,7 @@
     "step": {
       "init": {
         "title": "Options",
-        "description": "Deselected modules remove their entities.",
+        "description": "Deselected modules remove their entities.\n\n**Webhook URL for the Yuvomi notification channel** (keep it secret – anyone who knows it can send notifications to Home Assistant):\n`{webhook_url}`",
         "data": {
           "modules": "Modules",
           "fire_events": "Fire change events",
@@ -58,7 +58,8 @@
           "push_channel": "Instant updates (Yuvomi notifies via webhook)",
           "bring_entity": "Bring list to sync (empty = off)",
           "bring_list": "Yuvomi shopping list for the Bring sync",
-          "update_check": "Check for new Yuvomi versions (asks GitHub every 6 h)"
+          "update_check": "Check for new Yuvomi versions (asks GitHub every 6 h)",
+          "new_webhook_id": "New webhook URL (the old one stops working; update the channel in Yuvomi)"
         }
       }
     }
@@ -164,9 +165,6 @@
       },
       "budget_balance": {
         "name": "Balance this month"
-      },
-      "webhook": {
-        "name": "Webhook"
       },
       "pantry_items": {
         "name": "Pantry items",

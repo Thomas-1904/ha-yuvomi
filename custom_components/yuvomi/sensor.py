@@ -331,7 +331,6 @@ async def async_setup_entry(
         for desc in SENSORS + SENSORS_V2
         if module_available(coordinator, desc.module)
     ]
-    entities.append(YuvomiWebhookSensor(coordinator))
     if coordinator.bring_sync is not None or entry.options.get("bring_entity"):
         entities.append(YuvomiBringSyncSensor(coordinator))
     async_add_entities(entities)
@@ -415,26 +414,6 @@ class YuvomiWasteTypeSensor(YuvomiEntity, SensorEntity):
             "verschoben": nxt.get("moved"),
             "type_id": self._type_id,
         }
-
-
-class YuvomiWebhookSensor(YuvomiEntity, SensorEntity):
-    """Zeigt die Webhook-Adresse für den Yuvomi-Benachrichtigungskanal."""
-
-    _attr_translation_key = "webhook"
-    _attr_entity_category = EntityCategory.DIAGNOSTIC
-    _attr_icon = "mdi:webhook"
-    _attr_entity_registry_enabled_default = False
-
-    def __init__(self, coordinator: YuvomiCoordinator) -> None:
-        super().__init__(coordinator, "webhook")
-
-    @property
-    def native_value(self) -> str | None:
-        from homeassistant.components.webhook import async_generate_path
-
-        wid = self.coordinator.config_entry.data.get("webhook_id")
-        return async_generate_path(wid) if wid else None
-
 
 
 class YuvomiBringSyncSensor(YuvomiEntity, SensorEntity):

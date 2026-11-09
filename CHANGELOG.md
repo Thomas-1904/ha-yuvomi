@@ -4,8 +4,14 @@ All notable changes to this integration. Versions follow `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+### Security
+- **Removed the diagnostic sensor "Webhook".** It put the webhook path into an entity state, visible to every Home Assistant user and stored in the recorder history – but the webhook id is the only thing protecting that endpoint. The URL is now shown only to administrators in the integration's options dialog. Existing installations: the entity is removed automatically. If the sensor was enabled, purge its history (Developer tools → Actions → `recorder.purge_entities`) and create a new webhook URL (option *New webhook URL*), then update the channel in Yuvomi.
+
+### Added
+- Option **New webhook URL**: generates a new secret webhook id (the old URL stops working).
+
 ### Documentation
-- README: installation via the Home Assistant Marketplace (2026.11+).
+- README: installation via the Home Assistant Marketplace (2026.11+); search first, custom repository as fallback.
 
 ## 0.5.5 – 2026-11-07
 

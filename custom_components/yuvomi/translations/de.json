@@ -50,7 +50,7 @@
     "step": {
       "init": {
         "title": "Optionen",
-        "description": "Abgewählte Module entfernen ihre Entitäten beim Neuladen. Mit einer Bring-Liste werden Yuvomi und Bring in beide Richtungen gleich gehalten.",
+        "description": "Abgewählte Module entfernen ihre Entitäten.\n\n**Webhook-Adresse für den Yuvomi-Benachrichtigungskanal** (geheim halten – wer sie kennt, kann Benachrichtigungen an Home Assistant schicken):\n`{webhook_url}`",
         "data": {
           "modules": "Module",
           "fire_events": "Änderungsereignisse auslösen",
@@ -58,7 +58,8 @@
           "push_channel": "Sofort-Aktualisierung (Yuvomi meldet sich per Webhook)",
           "bring_entity": "Bring-Liste zum Abgleichen (leer = aus)",
           "bring_list": "Yuvomi-Einkaufsliste für den Bring-Abgleich",
-          "update_check": "Nach neuen Yuvomi-Versionen suchen (fragt alle 6 h bei GitHub)"
+          "update_check": "Nach neuen Yuvomi-Versionen suchen (fragt alle 6 h bei GitHub)",
+          "new_webhook_id": "Neue Webhook-Adresse erzeugen (die alte funktioniert dann nicht mehr; Kanal in Yuvomi anpassen)"
         }
       }
     }
@@ -164,9 +165,6 @@
       },
       "budget_balance": {
         "name": "Saldo Monat"
-      },
-      "webhook": {
-        "name": "Webhook"
       },
       "pantry_items": {
         "name": "Vorrat Artikel",

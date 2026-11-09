@@ -14,6 +14,7 @@ CONF_BRING_ENTITY = "bring_entity"
 CONF_BRING_LIST = "bring_list"
 CONF_PUSH = "push_channel"
 CONF_UPDATE_CHECK = "update_check"
+CONF_NEW_WEBHOOK = "new_webhook_id"
 PUSH_CHANNEL_NAME = "Home Assistant"
 FAST_POLL_SECONDS = 15
 

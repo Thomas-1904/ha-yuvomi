@@ -37,9 +37,9 @@ The integration talks to Yuvomi **only through the public REST API (`/api/v1`)**
 
 ## Installation
 
-**Marketplace (Home Assistant 2026.11 and newer):** Settings → Marketplace → *Add from link* → `https://github.com/Thomas-1904/ha-yuvomi` → install *Yuvomi (Community)* → restart Home Assistant. Adding a link needs a GitHub account connected in the Marketplace (read-only, also used to check for updates every 48 h). An installation from HACS carries over automatically when you upgrade Home Assistant.
+**Marketplace (Home Assistant 2026.11 and newer):** Settings → Marketplace → search for **Yuvomi** → install *Yuvomi (Community)* → restart Home Assistant. Until the integration is listed in the default catalog, add it as a custom repository instead: Settings → Marketplace → *Add from link* → `https://github.com/Thomas-1904/ha-yuvomi` → install *Yuvomi (Community)* → restart Home Assistant. Adding a link needs a GitHub account connected in the Marketplace (read-only, also used to check for updates every 48 h). An installation from HACS carries over automatically when you upgrade Home Assistant.
 
-**HACS (Home Assistant 2026.10 and older):** HACS → ⋮ → Custom repositories → add `https://github.com/Thomas-1904/ha-yuvomi` (type *Integration*) → install *Yuvomi (Community)* → restart Home Assistant.
+**HACS (Home Assistant 2026.10 and older):** HACS → search for **Yuvomi** → install → restart Home Assistant. Until it is listed: HACS → ⋮ → Custom repositories → add `https://github.com/Thomas-1904/ha-yuvomi` (type *Integration*) → install *Yuvomi (Community)* → restart Home Assistant.
 
 **Manual:** download `yuvomi.zip` from the latest [release](https://github.com/Thomas-1904/ha-yuvomi/releases), unpack it to `/config/custom_components/yuvomi`, restart Home Assistant.
 
@@ -86,7 +86,7 @@ Tested against real data: tasks, shopping lists, pantry, family calendar, meal p
 | Waste *(exp.)* | Calendar, next-collection sensors, today/tomorrow binary sensors |
 | Budget, loans, shared expenses *(exp.)* | Expenses/balance this month, per-account and subscription sensors, renew button, remaining loans, shared balance |
 | Rewards, notes, contacts, documents, shifts, health *(exp.)* | Pending redemptions, pinned notes, contacts, expiring documents, shift-plan calendar and shifts today, medications, prevention due, weight, blood pressure, calories today |
-| Always | Update entity *Server* (shows when a newer Yuvomi version is available, see Options), event entity *Notification* (one event per Yuvomi notification, usable in the automation editor), refresh button; diagnostic sensors "Webhook" (disabled by default) and "Bring sync" (when configured) |
+| Always | Update entity *Server* (shows when a newer Yuvomi version is available, see Options), event entity *Notification* (one event per Yuvomi notification, usable in the automation editor), refresh button; diagnostic sensor "Bring sync" (when configured) |
 
 "Done by": when a task is completed from Home Assistant, the integration looks for the Yuvomi member whose name matches the logged-in Home Assistant user (full or first name).
 
@@ -106,7 +106,7 @@ Settings → Devices & services → Yuvomi → *Configure*:
 - **Polling** of all enabled modules at the configured interval.
 - **Change counters**: every 15 s the integration reads `/api/v1/shopping/versions` (one tiny request) and refreshes immediately when a list changed.
 - **Notification channel (recommended):** Yuvomi forwards its notifications to a Home Assistant webhook; each one arrives as the event `yuvomi_webhook` and triggers an immediate refresh. With working webhooks you can set the polling interval more generously.
-  - *By hand (recommended):* enable the diagnostic sensor "Webhook" – it shows the path `/api/webhook/…`. In Yuvomi, as an administrator, add a notification channel of type *Webhook* with the URL `<your Home Assistant URL>` + that path. The integration keeps working with a scoped token.
+  - *By hand (recommended):* open Settings → Devices & services → Yuvomi → *Configure*. The dialog shows the webhook URL. In Yuvomi, as an administrator, add a notification channel of type *Webhook* with that URL. The integration keeps working with a scoped token. Treat the URL like a password – it is shown only to administrators in this dialog, never in an entity. If it ever leaked, tick *New webhook URL* there and enter the new URL in Yuvomi.
   - *Automatic (convenient alternative):* the option *Instant updates* creates a channel of type *webhook* named "Home Assistant". This requires an administrator token without scopes, which has full access to all family data and stays stored in Home Assistant permanently.
   - Yuvomi refuses channel URLs in private networks unless `NOTIFICATION_ALLOW_PRIVATE_NETWORK=true` is set for the Yuvomi container. Without it the integration uses Home Assistant's external URL (e.g. Nabu Casa) if one is configured – notification texts then travel via that external address.
   - The channel carries *notifications* (reminders, due tasks …), not every data change. Polling remains the backstop.

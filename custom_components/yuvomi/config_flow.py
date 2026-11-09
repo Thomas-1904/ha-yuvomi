@@ -21,6 +21,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .api import YuvomiApiError, YuvomiAuthError, YuvomiClient, YuvomiConnectionError, YuvomiError
 from .util import check_compat
 from homeassistant.helpers import selector
+from homeassistant.helpers.network import NoURLAvailableError, get_url
 
 from .const import (
     CONF_BRING_ENTITY,
@@ -28,6 +29,7 @@ from .const import (
     CONF_EVENTS,
     CONF_PUSH,
     CONF_UPDATE_CHECK,
+    CONF_NEW_WEBHOOK,
     CONF_MODULES,
     MODULES,
     CONF_SCAN_INTERVAL,
@@ -214,10 +216,30 @@ def _modules_schema(options: Mapping[str, Any] | None, events: bool) -> vol.Sche
     )
 
 
+def webhook_url(hass, webhook_id: str | None) -> str:
+    """Full webhook URL for the manual notification channel – shown to the admin in the options only."""
+    if not webhook_id:
+        return "–"
+    path = webhook.async_generate_path(webhook_id)
+    for kwargs in ({"prefer_external": True}, {"allow_external": False}):
+        try:
+            return get_url(hass, **kwargs) + path
+        except NoURLAvailableError:
+            continue
+    return path
+
+
 class YuvomiOptionsFlow(OptionsFlow):
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         if user_input is not None:
-            return self.async_create_entry(data=user_input)
+            data = dict(user_input)
+            if data.pop(CONF_NEW_WEBHOOK, False):
+                # New secret webhook id; the old URL stops working at once.
+                self.hass.config_entries.async_update_entry(
+                    self.config_entry,
+                    data={**self.config_entry.data, CONF_WEBHOOK_ID: webhook.async_generate_id()},
+                )
+            return self.async_create_entry(data=data)
         opts = self.config_entry.options
         schema = _modules_schema(opts, True).extend(
             {
@@ -226,6 +248,7 @@ class YuvomiOptionsFlow(OptionsFlow):
                 ): vol.All(vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL, max=3600)),
                 vol.Required(CONF_PUSH, default=opts.get(CONF_PUSH, True)): bool,
                 vol.Required(CONF_UPDATE_CHECK, default=opts.get(CONF_UPDATE_CHECK, True)): bool,
+                vol.Optional(CONF_NEW_WEBHOOK, default=False): bool,
             }
         )
         lists = []
@@ -251,4 +274,8 @@ class YuvomiOptionsFlow(OptionsFlow):
                     ): selector.SelectSelector(selector.SelectSelectorConfig(options=lists)),
                 }
             )
-        return self.async_show_form(step_id="init", data_schema=schema)
+        return self.async_show_form(
+            step_id="init",
+            data_schema=schema,
+            description_placeholders={"webhook_url": webhook_url(self.hass, self.config_entry.data.get(CONF_WEBHOOK_ID))},
+        )
