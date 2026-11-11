@@ -4,6 +4,9 @@ All notable changes to this integration. Versions follow `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+### Fixed
+- Changing a task from Home Assistant (e.g. moving its due date) failed with newer Yuvomi versions (400, `rotation_pool: null`). Updates no longer send back empty fields or read-only rotation/sync fields.
+
 ### Security
 - **Removed the diagnostic sensor "Webhook".** It put the webhook path into an entity state, visible to every Home Assistant user and stored in the recorder history – but the webhook id is the only thing protecting that endpoint. The URL is now shown only to administrators in the integration's options dialog. Existing installations: the entity is removed automatically. If the sensor was enabled, purge its history (Developer tools → Actions → `recorder.purge_entities`) and create a new webhook URL (option *New webhook URL*), then update the channel in Yuvomi.
 

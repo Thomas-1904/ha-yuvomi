@@ -34,3 +34,10 @@ def test_check_compat(info, verdict):
 )
 def test_rrule_text(rule, text):
     assert rrule_text(rule) == text
+
+
+def test_echo_body_drops_nulls_and_flattens_members():
+    from custom_components.yuvomi.util import echo_body
+
+    current = {"id": 1, "title": "x", "rotation_pool": None, "assigned_users": [{"id": 2, "name": "Sam"}], "tags": ["a"]}
+    assert echo_body(current, {"id"}) == {"title": "x", "assigned_users": [2], "tags": ["a"]}
