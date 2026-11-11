@@ -25,7 +25,7 @@ from .const import DOMAIN
 from .coordinator import YuvomiCoordinator, parse_date
 from .entity import YuvomiEntity, module_available, unique_prefix
 from .shopping_cat import category_for
-from .util import rrule_text, txt
+from .util import echo_body, rrule_text, txt
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -46,6 +46,13 @@ _TASK_READONLY = {
     "assigned_name",
     "comment_count",
     "sort_order",
+    "assigned_color",
+    "rotation_next_user",
+    "rotation_last_user",
+    "rotation_last_position",
+    "outbound_dirty",
+    "outbound_attempts",
+    "seen_on_server",
 }
 
 
@@ -264,7 +271,7 @@ class YuvomiTasksTodo(YuvomiEntity, TodoListEntity):
             if due_t != old_t:
                 changes["due_time"] = due_t
             if changes:
-                body = {k: v for k, v in current.items() if k not in _TASK_READONLY}
+                body = echo_body(current, _TASK_READONLY)
                 body.update(changes)
                 await client.put(f"/api/v1/tasks/{item.uid}", body)
         except YuvomiError as err:

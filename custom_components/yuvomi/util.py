@@ -68,3 +68,20 @@ def is_de(hass: Any) -> bool:
 
 def txt(hass: Any, de: str, en: str) -> str:
     return de if is_de(hass) else en
+
+
+def echo_body(current: dict, skip) -> dict:
+    """Aktuellen Stand fürs Zurückschicken per PUT aufbereiten.
+
+    Leere (None) Felder werden weggelassen – Yuvomi prüft z. B. ``rotation_pool``
+    streng und lehnt ``null`` ab. Listen aus Objekten (z. B. Mitglieder) werden
+    auf ihre IDs reduziert.
+    """
+    body: dict = {}
+    for k, v in current.items():
+        if k in skip or v is None:
+            continue
+        if isinstance(v, list) and v and all(isinstance(x, dict) and "id" in x for x in v):
+            v = [x["id"] for x in v]
+        body[k] = v
+    return body

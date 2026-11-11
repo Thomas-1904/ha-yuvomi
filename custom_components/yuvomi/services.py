@@ -16,6 +16,7 @@ from .api import YuvomiError, as_list, unwrap
 from .const import DOMAIN, RESOURCES
 from .coordinator import YuvomiCoordinator
 from .shopping_cat import category_for, is_uncategorized
+from .util import echo_body
 
 BASE = {vol.Optional("config_entry_id"): cv.string}
 OPT = SupportsResponse.OPTIONAL
@@ -117,7 +118,7 @@ def register_services(hass: HomeAssistant) -> None:
             except YuvomiError:
                 current = None
             if isinstance(current, dict):
-                body = {**{k: v for k, v in current.items() if k not in ("id", "created_at", "updated_at")}, **body}
+                body = {**echo_body(current, ("id", "created_at", "updated_at")), **body}
         return _resp(call, await _run(c, method, path, body))
 
     async def delete(call: ServiceCall) -> None:
