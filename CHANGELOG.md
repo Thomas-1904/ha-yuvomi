@@ -4,6 +4,8 @@ All notable changes to this integration. Versions follow `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+## 0.5.6 – 2026-11-11
+
 ### Fixed
 - Changing a task from Home Assistant (e.g. moving its due date) failed with newer Yuvomi versions (400, `rotation_pool: null`). Updates no longer send back empty fields or read-only rotation/sync fields.
 
