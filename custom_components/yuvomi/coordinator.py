@@ -140,7 +140,8 @@ class YuvomiCoordinator(DataUpdateCoordinator[YuvomiData]):
         prev = self._last or YuvomiData()
         today = dt_util.now().date()
         try:
-            d.version = prev.version or await self.client.version()
+            # After an outage (e.g. Yuvomi was restarted for an update) read the version again
+            d.version = (prev.version if self.last_update_success else None) or await self.client.version()
 
             dash = unwrap(await self._opt("dashboard", d, "/api/v1/dashboard", {"events_limit": 12}))
             d.dashboard = dash if isinstance(dash, dict) else {}

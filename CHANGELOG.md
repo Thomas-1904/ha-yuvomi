@@ -4,6 +4,9 @@ All notable changes to this integration. Versions follow `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+### Fixed
+- After updating Yuvomi, the update entity and the device's software version kept showing the old Yuvomi version until Home Assistant was restarted. The version is now read again after Yuvomi was unreachable and whenever it changes.
+
 ## 0.5.6 – 2026-11-11
 
 ### Fixed
