@@ -71,7 +71,7 @@ jobs:
 
       - name: Create release
         if: env.DRY_RUN != 'true'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ steps.v.outputs.version }}
           name: ${{ steps.v.outputs.version }}
