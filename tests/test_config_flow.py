@@ -82,3 +82,26 @@ async def test_no_webhook_entity(hass):
     states = " ".join(str(s.state) + str(s.attributes) for s in hass.states.async_all())
     assert "hook123" not in states
     assert not any(e.unique_id.endswith("_core_webhook") for e in er.async_entries_for_config_entry(er.async_get(hass), entry.entry_id))
+
+
+async def test_ssl_error_is_explained(hass):
+    from custom_components.yuvomi.api import YuvomiSSLError
+
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": config_entries.SOURCE_USER})
+    with patch(VALIDATE, side_effect=YuvomiSSLError("certificate verify failed: unable to get local issuer certificate")):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {CONF_URL: "https://yuvomi.lan", CONF_TOKEN: "abc", "verify_ssl": True}
+        )
+    assert result["errors"] == {"base": "ssl_error"}
+    assert "unable to get local issuer" in result["description_placeholders"]["error"]
+
+
+async def test_verify_ssl_off_is_stored(hass):
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": config_entries.SOURCE_USER})
+    with patch(VALIDATE, return_value={}) as val, patch(SETUP, return_value=True):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {CONF_URL: "https://yuvomi.lan", CONF_TOKEN: "abc", "verify_ssl": False}
+        )
+        assert val.call_args.args[3] is False
+        result = await hass.config_entries.flow.async_configure(result["flow_id"], {"modules": ["tasks"], "fire_events": True})
+    assert result["data"]["verify_ssl"] is False

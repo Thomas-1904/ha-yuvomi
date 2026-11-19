@@ -25,6 +25,10 @@ class YuvomiConnectionError(YuvomiError):
     """Server nicht erreichbar."""
 
 
+class YuvomiSSLError(YuvomiConnectionError):
+    """TLS/SSL problem, e.g. a certificate from a private CA or a self-signed one."""
+
+
 class YuvomiApiError(YuvomiError):
     """Server hat einen Fehler gemeldet."""
 
@@ -142,8 +146,12 @@ class YuvomiClient:
                     reason = body.get("reason") if isinstance(body, dict) else None
                     raise YuvomiApiError(resp.status, msg or "Error", reason)
                 return body
-        except (aiohttp.ClientConnectionError, asyncio.TimeoutError) as err:
-            raise YuvomiConnectionError(str(err) or "Timeout") from err
+        except (aiohttp.ClientConnectorCertificateError, aiohttp.ClientSSLError) as err:
+            raise YuvomiSSLError(str(err) or "SSL error") from err
+        except asyncio.TimeoutError as err:
+            raise YuvomiConnectionError(f"Timeout after {TIMEOUT.total:.0f} s" if hasattr(TIMEOUT, "total") else "Timeout") from err
+        except aiohttp.ClientConnectionError as err:
+            raise YuvomiConnectionError(str(err) or type(err).__name__) from err
 
     async def get(self, path: str, **kwargs: Any) -> Any:
         return await self.request("GET", path, **kwargs)

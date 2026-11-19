@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+import logging
 from typing import Any
 
 import voluptuous as vol
@@ -14,11 +15,11 @@ from homeassistant.config_entries import (
     ConfigFlowResult,
     OptionsFlow,
 )
-from homeassistant.const import CONF_TOKEN, CONF_URL
+from homeassistant.const import CONF_TOKEN, CONF_URL, CONF_VERIFY_SSL
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api import YuvomiApiError, YuvomiAuthError, YuvomiClient, YuvomiConnectionError, YuvomiError
+from .api import YuvomiApiError, YuvomiAuthError, YuvomiClient, YuvomiConnectionError, YuvomiError, YuvomiSSLError
 from .util import check_compat
 from homeassistant.helpers import selector
 from homeassistant.helpers.network import NoURLAvailableError, get_url
@@ -44,8 +45,8 @@ class YuvomiTooOld(YuvomiError):
     """Instanz älter als unterstützt."""
 
 
-async def _validate(hass, url: str, token: str) -> dict[str, Any]:
-    client = YuvomiClient(async_get_clientsession(hass), url, token)
+async def _validate(hass, url: str, token: str, verify_ssl: bool = True) -> dict[str, Any]:
+    client = YuvomiClient(async_get_clientsession(hass, verify_ssl=verify_ssl), url, token)
     try:
         me = await client.me()
     except YuvomiApiError as err:
@@ -64,11 +65,36 @@ async def _validate(hass, url: str, token: str) -> dict[str, Any]:
     return me
 
 
+_LOGGER = logging.getLogger(__name__)
+
+
+def _error_key(err: Exception) -> str:
+    """Map a validation error to a form error key (and log the details)."""
+    if isinstance(err, YuvomiAuthError):
+        return "invalid_auth"
+    if isinstance(err, YuvomiSSLError):
+        _LOGGER.warning("Yuvomi: SSL/certificate error: %s", err)
+        return "ssl_error"
+    if isinstance(err, YuvomiConnectionError):
+        _LOGGER.warning("Yuvomi: cannot connect: %s", err)
+        return "cannot_connect"
+    if isinstance(err, YuvomiTooOld):
+        return "unsupported_version"
+    if isinstance(err, YuvomiApiError):
+        if err.status == 403:
+            return "missing_scope"
+        _LOGGER.warning("Yuvomi: unexpected answer: %s", err)
+        return "unknown"
+    _LOGGER.warning("Yuvomi: unexpected error: %s", err)
+    return "unknown"
+
+
 class YuvomiConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         errors: dict[str, str] = {}
+        placeholders: dict[str, str] = {"error": ""}
         if user_input is not None:
             url = user_input[CONF_URL].strip().rstrip("/")
             if not url.startswith(("http://", "https://")):
@@ -77,23 +103,17 @@ class YuvomiConfigFlow(ConfigFlow, domain=DOMAIN):
             await self.async_set_unique_id(url.lower())
             self._abort_if_unique_id_configured()
             try:
-                me = await _validate(self.hass, url, token)
-            except YuvomiAuthError:
-                errors["base"] = "invalid_auth"
-            except YuvomiConnectionError:
-                errors["base"] = "cannot_connect"
-            except YuvomiTooOld:
-                errors["base"] = "unsupported_version"
-            except YuvomiApiError as err:
-                errors["base"] = "missing_scope" if err.status == 403 else "unknown"
-            except YuvomiError:
-                errors["base"] = "unknown"
+                me = await _validate(self.hass, url, token, user_input.get(CONF_VERIFY_SSL, True))
+            except YuvomiError as err:
+                errors["base"] = _error_key(err)
+                placeholders["error"] = str(err)
             else:
                 name = me.get("display_name") or me.get("username")
                 self._title = f"Yuvomi ({name})" if name else "Yuvomi"
                 self._data = {
                     CONF_URL: url,
                     CONF_TOKEN: token,
+                    CONF_VERIFY_SSL: user_input.get(CONF_VERIFY_SSL, True),
                     CONF_WEBHOOK_ID: webhook.async_generate_id(),
                 }
                 return await self.async_step_modules()
@@ -103,9 +123,11 @@ class YuvomiConfigFlow(ConfigFlow, domain=DOMAIN):
                 {
                     vol.Required(CONF_URL, default=(user_input or {}).get(CONF_URL, "http://")): str,
                     vol.Required(CONF_TOKEN): str,
+                    vol.Optional(CONF_VERIFY_SSL, default=(user_input or {}).get(CONF_VERIFY_SSL, True)): bool,
                 }
             ),
             errors=errors,
+            description_placeholders=placeholders,
         )
 
     async def async_step_modules(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
@@ -130,16 +152,14 @@ class YuvomiConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         errors: dict[str, str] = {}
+        placeholders: dict[str, str] = {"error": ""}
         entry = self._get_reauth_entry()
         if user_input is not None:
             try:
-                await _validate(self.hass, entry.data[CONF_URL], user_input[CONF_TOKEN].strip())
-            except YuvomiAuthError:
-                errors["base"] = "invalid_auth"
-            except YuvomiConnectionError:
-                errors["base"] = "cannot_connect"
-            except YuvomiError:
-                errors["base"] = "unknown"
+                await _validate(self.hass, entry.data[CONF_URL], user_input[CONF_TOKEN].strip(), entry.data.get(CONF_VERIFY_SSL, True))
+            except YuvomiError as err:
+                errors["base"] = _error_key(err)
+                placeholders["error"] = str(err)
             else:
                 return self.async_update_reload_and_abort(
                     entry, data_updates={CONF_TOKEN: user_input[CONF_TOKEN].strip()}
@@ -148,6 +168,7 @@ class YuvomiConfigFlow(ConfigFlow, domain=DOMAIN):
             step_id="reauth_confirm",
             data_schema=vol.Schema({vol.Required(CONF_TOKEN): str}),
             errors=errors,
+            description_placeholders=placeholders,
         )
 
     async def async_step_reconfigure(
@@ -155,6 +176,7 @@ class YuvomiConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Change URL and/or token without removing the integration."""
         errors: dict[str, str] = {}
+        placeholders: dict[str, str] = {"error": ""}
         entry = self._get_reconfigure_entry()
         if user_input is not None:
             url = user_input[CONF_URL].strip().rstrip("/")
@@ -165,22 +187,15 @@ class YuvomiConfigFlow(ConfigFlow, domain=DOMAIN):
             if url.lower() != (entry.unique_id or ""):
                 self._abort_if_unique_id_configured()
             try:
-                await _validate(self.hass, url, token)
-            except YuvomiAuthError:
-                errors["base"] = "invalid_auth"
-            except YuvomiConnectionError:
-                errors["base"] = "cannot_connect"
-            except YuvomiTooOld:
-                errors["base"] = "unsupported_version"
-            except YuvomiApiError as err:
-                errors["base"] = "missing_scope" if err.status == 403 else "unknown"
-            except YuvomiError:
-                errors["base"] = "unknown"
+                await _validate(self.hass, url, token, user_input.get(CONF_VERIFY_SSL, True))
+            except YuvomiError as err:
+                errors["base"] = _error_key(err)
+                placeholders["error"] = str(err)
             else:
                 return self.async_update_reload_and_abort(
                     entry,
                     unique_id=url.lower(),
-                    data_updates={CONF_URL: url, CONF_TOKEN: token},
+                    data_updates={CONF_URL: url, CONF_TOKEN: token, CONF_VERIFY_SSL: user_input.get(CONF_VERIFY_SSL, True)},
                 )
         return self.async_show_form(
             step_id="reconfigure",
@@ -188,9 +203,11 @@ class YuvomiConfigFlow(ConfigFlow, domain=DOMAIN):
                 {
                     vol.Required(CONF_URL, default=entry.data[CONF_URL]): str,
                     vol.Optional(CONF_TOKEN): str,
+                    vol.Optional(CONF_VERIFY_SSL, default=entry.data.get(CONF_VERIFY_SSL, True)): bool,
                 }
             ),
             errors=errors,
+            description_placeholders=placeholders,
         )
 
     @staticmethod

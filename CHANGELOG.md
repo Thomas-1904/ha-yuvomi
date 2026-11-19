@@ -4,6 +4,12 @@ All notable changes to this integration. Versions follow `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+### Added
+- **"Verify SSL certificate" option** in the setup and in *Reconfigure*: lets the integration connect to a Yuvomi server that uses a certificate from a private CA or a self-signed one (#4).
+
+### Changed
+- Clearer setup errors: "Cannot connect" now shows the actual reason (e.g. connection refused, timeout), certificate problems get their own message with a hint, and the details are logged.
+
 ### Fixed
 - After updating Yuvomi, the update entity and the device's software version kept showing the old Yuvomi version until Home Assistant was restarted. The version is now read again after Yuvomi was unreachable and whenever it changes.
 

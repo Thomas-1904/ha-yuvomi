@@ -6,7 +6,8 @@
         "description": "Address of your Yuvomi instance and an API token.",
         "data": {
           "url": "URL",
-          "token": "API-Token"
+          "token": "API-Token",
+          "verify_ssl": "Verify SSL certificate"
         }
       },
       "modules": {
@@ -29,16 +30,18 @@
         "description": "Change the address of your Yuvomi instance. Leave the token empty to keep the current one.",
         "data": {
           "url": "URL",
-          "token": "New API token (optional)"
+          "token": "New API token (optional)",
+          "verify_ssl": "Verify SSL certificate"
         }
       }
     },
     "error": {
       "invalid_auth": "Invalid token",
-      "cannot_connect": "Cannot connect",
+      "cannot_connect": "Cannot connect to Yuvomi: {error}",
       "unknown": "Unknown error",
       "unsupported_version": "This Yuvomi version is not supported – please update Yuvomi (2.79 or newer).",
-      "missing_scope": "The token lacks at least the scope \"family:read\"."
+      "missing_scope": "The token lacks at least the scope \"family:read\".",
+      "ssl_error": "The server's certificate could not be verified ({error}). If Yuvomi uses a certificate from your own CA or a self-signed one, untick \"Verify SSL certificate\" – or use http:// inside your local network."
     },
     "abort": {
       "already_configured": "Already configured",

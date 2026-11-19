@@ -149,6 +149,7 @@ The integration's entities work with Home Assistant's voice assistant out of the
 ## Troubleshooting
 
 - **A module stays empty:** the token lacks that module's scope (see table) or the module is not active in Yuvomi. A repair notice under Settings → Repairs names the modules and the scopes they need.
+- **Setup fails with "cannot connect" / certificate error:** the message shows the reason. For HTTPS with a certificate from your own CA or a self-signed one, untick *Verify SSL certificate* (or use `http://` inside your network).
 - **Setup fails with "missing scope":** the token needs at least `family:read`.
 - **Repair notice "Yuvomi update recommended" / "too old":** update Yuvomi; the notice disappears on the next start.
 - **No instant updates:** check the log for "Yuvomi-Push nicht eingerichtet" (channel could not be created – token without admin rights, or no reachable URL) and Yuvomi's channel status.

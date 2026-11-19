@@ -151,6 +151,7 @@ Die Blueprints sind englisch beschriftet.
 ## Fehlersuche
 
 - **Ein Modul bleibt leer:** Dem Token fehlt der Scope des Moduls (siehe Tabelle) oder das Modul ist in Yuvomi nicht aktiv. Ein Hinweis unter Einstellungen → Reparaturen nennt die betroffenen Module und die nötigen Scopes.
+- **Einrichtung scheitert mit „Keine Verbindung“ / Zertifikatsfehler:** Die Meldung nennt den Grund. Bei HTTPS mit Zertifikat einer eigenen CA oder selbst signiert *SSL-Zertifikat prüfen* abwählen (oder im Heimnetz `http://` nutzen).
 - **Einrichtung scheitert mit „fehlender Scope“:** Das Token braucht mindestens `family:read`.
 - **Reparatur-Hinweis „Update empfohlen“ / „zu alt“:** Yuvomi aktualisieren; der Hinweis verschwindet beim nächsten Start.
 - **Keine Sofort-Aktualisierung:** Im Log nach „Yuvomi-Push nicht eingerichtet“ suchen (Kanal konnte nicht angelegt werden – Token ohne Admin-Rechte oder keine erreichbare Adresse) und den Kanalstatus in Yuvomi prüfen.

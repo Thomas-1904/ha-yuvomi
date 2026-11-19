@@ -9,7 +9,7 @@ from aiohttp import web
 
 from homeassistant.components import webhook
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_TOKEN, CONF_URL
+from homeassistant.const import CONF_TOKEN, CONF_URL, CONF_VERIFY_SSL
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv, entity_registry as er
@@ -53,7 +53,11 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: YuvomiConfigEntry) -> bool:
-    client = YuvomiClient(async_get_clientsession(hass), entry.data[CONF_URL], entry.data[CONF_TOKEN])
+    client = YuvomiClient(
+        async_get_clientsession(hass, verify_ssl=entry.data.get(CONF_VERIFY_SSL, True)),
+        entry.data[CONF_URL],
+        entry.data[CONF_TOKEN],
+    )
     coordinator = YuvomiCoordinator(hass, entry, client)
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
