@@ -4,6 +4,8 @@ All notable changes to this integration. Versions follow `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+## 0.5.7 – 2026-11-20
+
 ### Added
 - **"Verify SSL certificate" option** in the setup and in *Reconfigure*: lets the integration connect to a Yuvomi server that uses a certificate from a private CA or a self-signed one (#4).
 
