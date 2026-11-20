@@ -682,6 +682,10 @@
           "name": "Date ID",
           "description": ""
         },
+        "performed_on": {
+          "name": "Done on",
+          "description": "Default: today"
+        },
         "odometer": {
           "name": "Odometer",
           "description": ""
@@ -788,7 +792,7 @@
         },
         "points": {
           "name": "Points",
-          "description": ""
+          "description": "Positive = bonus, negative = correction"
         },
         "reason": {
           "name": "Reason",
@@ -1096,6 +1100,9 @@
     },
     "occurrence_edit": {
       "message": "Recurring events can only be changed in Yuvomi itself."
+    },
+    "worker_required": {
+      "message": "Several housekeepers exist in Yuvomi – please give the worker_id."
     }
   }
 }

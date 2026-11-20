@@ -682,6 +682,10 @@
           "name": "Termin-ID",
           "description": ""
         },
+        "performed_on": {
+          "name": "Erledigt am",
+          "description": "Standard: heute"
+        },
         "odometer": {
           "name": "Kilometerstand",
           "description": ""
@@ -788,7 +792,7 @@
         },
         "points": {
           "name": "Punkte",
-          "description": ""
+          "description": "Positiv = Bonus, negativ = Korrektur"
         },
         "reason": {
           "name": "Grund",
@@ -1096,6 +1100,9 @@
     },
     "occurrence_edit": {
       "message": "Wiederkehrende Termine lassen sich nur in Yuvomi selbst ändern."
+    },
+    "worker_required": {
+      "message": "In Yuvomi gibt es mehrere Haushaltshilfen – bitte worker_id angeben."
     }
   }
 }

@@ -258,13 +258,24 @@ def register_services(hass: HomeAssistant) -> None:
         body: dict[str, Any] = {"timezone": str(dt_util.get_default_time_zone())}
         if "worker_id" in call.data:
             body["worker_id"] = call.data["worker_id"]
+        else:
+            # Yuvomi needs the housekeeper; with exactly one profile it is unambiguous
+            try:
+                workers = as_list(await c.client.get("/api/v1/housekeeping/workers"))
+            except YuvomiError:
+                workers = []
+            if len(workers) == 1 and workers[0].get("id") is not None:
+                body["worker_id"] = workers[0]["id"]
+            elif len(workers) > 1:
+                raise ServiceValidationError(translation_domain=DOMAIN, translation_key="worker_required")
         if "extras" in call.data:
             body["extras"] = call.data["extras"]
         await _run(c, "POST", f"/api/v1/housekeeping/work-sessions/check-{call.data['direction']}", body)
 
     async def complete_inventory_date(call: ServiceCall) -> None:
         c = _coordinator(hass, call)
-        body = {k: call.data[k] for k in ("odometer", "vendor", "note") if k in call.data}
+        body: dict[str, Any] = {k: call.data[k] for k in ("odometer", "vendor", "note") if k in call.data}
+        body["performed_on"] = str(call.data.get("performed_on") or dt_util.now().date())
         await _run(c, "POST", f"/api/v1/inventory/items/{call.data['item_id']}/dates/{call.data['date_id']}/complete", body)
 
     async def add_budget_entry(call: ServiceCall) -> ServiceResponse:
@@ -298,7 +309,8 @@ def register_services(hass: HomeAssistant) -> None:
     })
     reg("complete_inventory_date", complete_inventory_date, {
         vol.Required("item_id"): vol.Coerce(int), vol.Required("date_id"): vol.Coerce(int),
-        vol.Optional("odometer"): vol.Coerce(float), vol.Optional("vendor"): cv.string, vol.Optional("note"): cv.string,
+        vol.Optional("performed_on"): cv.date, vol.Optional("odometer"): vol.All(vol.Coerce(float), vol.Coerce(int), vol.Range(min=0)),
+        vol.Optional("vendor"): cv.string, vol.Optional("note"): cv.string,
     })
     reg("add_budget_entry", add_budget_entry, {
         vol.Required("title"): cv.string, vol.Required("amount"): vol.Coerce(float), vol.Required("date"): cv.date,
@@ -313,7 +325,7 @@ def register_services(hass: HomeAssistant) -> None:
 
     async def reward_bonus(call: ServiceCall) -> None:
         c = _coordinator(hass, call)
-        await _run(c, "POST", "/api/v1/rewards/bonus", {"user_id": call.data["user_id"], "points": call.data["points"], "reason": call.data.get("reason", "")})
+        await _run(c, "POST", "/api/v1/rewards/bonus", {"user_id": call.data["user_id"], "delta": call.data["points"], "reason": call.data.get("reason") or None})
 
     async def redeem_reward(call: ServiceCall) -> None:
         c = _coordinator(hass, call)
@@ -334,7 +346,7 @@ def register_services(hass: HomeAssistant) -> None:
         c = _coordinator(hass, call)
         await _run(c, "PATCH", f"/api/v1/notes/{call.data['note_id']}/check", {"line": call.data["line"], "checked": call.data.get("checked", True)})
 
-    reg("reward_bonus", reward_bonus, {vol.Required("user_id"): vol.Coerce(int), vol.Required("points"): vol.Coerce(int), vol.Optional("reason"): cv.string})
+    reg("reward_bonus", reward_bonus, {vol.Required("user_id"): vol.Coerce(int), vol.Required("points"): vol.All(vol.Coerce(int), vol.Range(min=-1000000, max=1000000), vol.NotIn([0])), vol.Optional("reason"): cv.string})
     reg("redeem_reward", redeem_reward, {vol.Required("catalog_id"): vol.Coerce(int), vol.Optional("user_id"): vol.Coerce(int)})
     reg("dismiss_reminder", dismiss_reminder, {vol.Required("reminder_id"): vol.Coerce(int)})
     reg("pin_note", pin_note, {vol.Required("note_id"): vol.Coerce(int), vol.Optional("pinned", default=True): cv.boolean})

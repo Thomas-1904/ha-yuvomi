@@ -488,6 +488,27 @@ class YuvomiShoppingTodo(YuvomiEntity, TodoListEntity):
         await self.coordinator.async_request_refresh()
 
 
+# Yuvomi's pantry only knows these units (an unknown one is refused since Yuvomi 2.9x)
+PANTRY_UNITS = {
+    "pcs": ("pcs", "pc", "stk", "stk.", "stück", "stueck", "x", "piece", "pieces"),
+    "g": ("g", "gr", "gramm", "gram", "grams"),
+    "kg": ("kg", "kilo", "kilogramm"),
+    "ml": ("ml", "milliliter"),
+    "l": ("l", "liter", "litre", "liters"),
+    "pkg": ("pkg", "pck", "pck.", "pack", "packung", "packungen", "paket", "pkt", "pkt.", "package"),
+    "can": ("can", "cans", "dose", "dosen"),
+    "bottle": ("bottle", "bottles", "flasche", "flaschen", "fl", "fl."),
+    "jar": ("jar", "jars", "glas", "gläser", "glaeser"),
+    "bag": ("bag", "bags", "beutel", "tüte", "tuete", "tüten", "sack"),
+}
+_UNIT_ALIAS = {a: unit for unit, aliases in PANTRY_UNITS.items() for a in aliases}
+
+
+def pantry_unit(text: str | None) -> str | None:
+    """'Stück' -> 'pcs', 'Flaschen' -> 'bottle'; unknown units -> None (Yuvomi keeps its default)."""
+    return _UNIT_ALIAS.get(str(text or "").strip().lower())
+
+
 class YuvomiPantryTodo(YuvomiEntity, TodoListEntity):
     """Vorrat: jede Charge ein Eintrag, Fälligkeit = Mindesthaltbarkeit.
 
@@ -549,7 +570,7 @@ class YuvomiPantryTodo(YuvomiEntity, TodoListEntity):
                 amount = int(amount)
         except ValueError:
             return name, None, None
-        return name, amount, parts[1] if len(parts) > 1 else None
+        return name, amount, pantry_unit(parts[1]) if len(parts) > 1 else None
 
     async def async_create_todo_item(self, item: TodoItem) -> None:
         name, qty, unit = self._parse(item.summary or "")

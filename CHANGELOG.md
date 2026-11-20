@@ -4,6 +4,12 @@ All notable changes to this integration. Versions follow `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+### Fixed
+- **`yuvomi.reward_bonus`** sent the points under the wrong field name, so Yuvomi refused every bonus. It now sends them as Yuvomi expects; negative values book a correction.
+- **Maintenance done** (button and `yuvomi.complete_inventory_date`) now sends the completion date Yuvomi requires (today, or the new optional `performed_on` field); the odometer is sent as a whole number.
+- **`yuvomi.housekeeper_check`** without `worker_id` now picks the housekeeper automatically when there is only one; with several, it asks for the `worker_id` instead of failing with an API error.
+- **Pantry to-do list**: units typed in the item ("2 Flaschen", "500 g", "1 Packung") are translated to Yuvomi's units; unknown units are left out instead of being refused. Yuvomi 2.89 and later check every request strictly.
+
 ## 0.5.7 – 2026-11-20
 
 ### Added

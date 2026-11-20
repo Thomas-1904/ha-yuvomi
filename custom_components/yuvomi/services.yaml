@@ -570,12 +570,14 @@ complete_inventory_date:
           min: 0
           max: 1000000000
           mode: box
+    performed_on:
+      selector:
+        date: {}
     odometer:
       selector:
         number:
           min: 0
-          max: 1000000
-          step: 0.01
+          max: 10000000
           mode: box
     vendor:
       selector:
@@ -678,8 +680,8 @@ reward_bonus:
       required: true
       selector:
         number:
-          min: 0
-          max: 1000000000
+          min: -1000000
+          max: 1000000
           mode: box
     reason:
       selector:

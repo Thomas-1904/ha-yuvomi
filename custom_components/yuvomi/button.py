@@ -183,7 +183,8 @@ class YuvomiInventoryDoneButton(YuvomiEntity, ButtonEntity):
             raise HomeAssistantError(translation_domain=DOMAIN, translation_key="no_open_visit")
         try:
             await self.coordinator.client.post(
-                f"/api/v1/inventory/items/{self._id}/dates/{nd.get('id')}/complete"
+                f"/api/v1/inventory/items/{self._id}/dates/{nd.get('id')}/complete",
+                {"performed_on": dt_util.now().date().isoformat()},
             )
         except YuvomiError as err:
             raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
