@@ -4,6 +4,8 @@ All notable changes to this integration. Versions follow `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+## 0.5.8 – 2026-11-21
+
 ### 🎉 Now in the official catalog 🥳
 - 🎊 **Yuvomi (Community) is now part of the official HACS default catalog** – and with it the **Home Assistant Marketplace** (2026.11+). Just search for **Yuvomi** and install it, no custom repository or link needed anymore. Thanks to everyone who tested and gave feedback! 🙌🍾
 - README: install instructions shortened accordingly.
