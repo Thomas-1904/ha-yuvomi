@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="https://github.com/Thomas-1904/ha-yuvomi/releases"><img alt="Release" src="https://img.shields.io/github/v/release/Thomas-1904/ha-yuvomi?color=7c3aed"></a>
-  <a href="https://hacs.xyz"><img alt="HACS / Marketplace" src="https://img.shields.io/badge/HACS%20%2F%20Marketplace-Custom-7c3aed"></a>
+  <a href="https://hacs.xyz"><img alt="HACS / Marketplace" src="https://img.shields.io/badge/HACS%20%2F%20Marketplace-Default-7c3aed"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/Thomas-1904/ha-yuvomi?color=7c3aed"></a>
 </p>
 
@@ -37,9 +37,9 @@ Die Integration spricht **ausschließlich über die öffentliche REST-API (`/api
 
 ## Installation
 
-**Marketplace (ab Home Assistant 2026.11):** Einstellungen → Marketplace → nach **Yuvomi** suchen → *Yuvomi (Community)* installieren → Home Assistant neu starten. Solange die Integration noch nicht im Standardkatalog steht, stattdessen als benutzerdefiniertes Repository hinzufügen: Einstellungen → Marketplace → Repository per Link hinzufügen (englisch *Add from link*) → `https://github.com/Thomas-1904/ha-yuvomi` → *Yuvomi (Community)* installieren → Home Assistant neu starten. Für das Hinzufügen per Link muss im Marketplace ein GitHub-Konto verbunden sein (nur Lesezugriff, wird auch für die Update-Prüfung alle 48 h genutzt). Eine Installation aus HACS wird beim Home-Assistant-Update automatisch übernommen.
+**Marketplace (ab Home Assistant 2026.11):** Einstellungen → Marketplace → nach **Yuvomi** suchen → *Yuvomi (Community)* installieren → Home Assistant neu starten. Eine Installation aus HACS wird beim Home-Assistant-Update automatisch übernommen.
 
-**HACS (bis Home Assistant 2026.10):** HACS → nach **Yuvomi** suchen → installieren → Home Assistant neu starten. Solange sie noch nicht gelistet ist: HACS → ⋮ → Benutzerdefinierte Repositories → `https://github.com/Thomas-1904/ha-yuvomi` hinzufügen (Typ *Integration*) → *Yuvomi (Community)* installieren → Home Assistant neu starten.
+**HACS (bis Home Assistant 2026.10):** HACS → nach **Yuvomi** suchen → installieren → Home Assistant neu starten.
 
 **Manuell:** `yuvomi.zip` aus dem neuesten [Release](https://github.com/Thomas-1904/ha-yuvomi/releases) laden, nach `/config/custom_components/yuvomi` entpacken, Home Assistant neu starten.
 

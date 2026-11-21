@@ -4,6 +4,10 @@ All notable changes to this integration. Versions follow `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+### 🎉 Now in the official catalog 🥳
+- 🎊 **Yuvomi (Community) is now part of the official HACS default catalog** – and with it the **Home Assistant Marketplace** (2026.11+). Just search for **Yuvomi** and install it, no custom repository or link needed anymore. Thanks to everyone who tested and gave feedback! 🙌🍾
+- README: install instructions shortened accordingly.
+
 ### Fixed
 - **`yuvomi.reward_bonus`** sent the points under the wrong field name, so Yuvomi refused every bonus. It now sends them as Yuvomi expects; negative values book a correction.
 - **Maintenance done** (button and `yuvomi.complete_inventory_date`) now sends the completion date Yuvomi requires (today, or the new optional `performed_on` field); the odometer is sent as a whole number.
