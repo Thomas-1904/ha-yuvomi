@@ -70,3 +70,21 @@ async def test_housekeeper_check_needs_worker_when_several(hass):
 )
 def test_pantry_unit(text, unit):
     assert pantry_unit(text) == unit
+
+
+class PantryFake(Fake):
+    async def request(self, method: str, path: str, json: Any = None, params: Any = None, **kw: Any) -> Any:
+        if method == "GET" and path == "/api/v1/pantry":
+            return {"items": [
+                {"id": 1, "name": "Milch", "quantity": 0},
+                {"id": 2, "name": "Reis", "quantity": 1, "min_quantity": 2},
+                {"id": 3, "name": "Mehl", "quantity": 5, "min_quantity": 1},
+            ]}
+        return await super().request(method, path, json, params, **kw)
+
+
+async def test_pantry_to_shopping_sends_low_items(hass):
+    fake = PantryFake()
+    await _setup(hass, fake, ["shopping"])
+    await _call(hass, fake, "pantry_to_shopping", {})
+    assert _posted(fake, "/api/v1/shopping/3/import-pantry") == {"items": [{"pantry_item_id": 1}, {"pantry_item_id": 2}]}

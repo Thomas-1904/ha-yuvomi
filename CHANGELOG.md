@@ -4,6 +4,9 @@ All notable changes to this integration. Versions follow `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+### Fixed
+- **`yuvomi.pantry_to_shopping`** added nothing: Yuvomi expects the items to transfer, and since 2.94 it refuses the request without them. The service now puts every pantry item that is empty or at/below its minimum stock on the shopping list (items already on the list are skipped by Yuvomi).
+
 ## 0.5.8 – 2026-11-21
 
 ### 🎉 Now in the official catalog 🥳

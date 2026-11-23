@@ -16,7 +16,7 @@ from .api import YuvomiError, as_list, unwrap
 from .const import DOMAIN, RESOURCES
 from .coordinator import YuvomiCoordinator
 from .shopping_cat import category_for, is_uncategorized
-from .util import echo_body
+from .util import echo_body, pantry_low
 
 BASE = {vol.Optional("config_entry_id"): cv.string}
 OPT = SupportsResponse.OPTIONAL
@@ -215,7 +215,14 @@ def register_services(hass: HomeAssistant) -> None:
 
     async def pantry_to_shopping(call: ServiceCall) -> None:
         c = _coordinator(hass, call)
-        await _run(c, "POST", f"/api/v1/shopping/{_first_list(c, call.data.get('list_id'))}/import-pantry")
+        # Yuvomi takes the entries to add; the integration picks what is empty or at/below its minimum
+        try:
+            pantry = as_list(await c.client.get("/api/v1/pantry"), "items")
+        except YuvomiError as err:
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="api_error", translation_placeholders={"error": str(err)}) from err
+        items = [{"pantry_item_id": int(i["id"])} for i in pantry_low(pantry) if str(i.get("id", "")).isdigit()]
+        if items:
+            await _run(c, "POST", f"/api/v1/shopping/{_first_list(c, call.data.get('list_id'))}/import-pantry", {"items": items})
 
     async def shopping_to_pantry(call: ServiceCall) -> None:
         c = _coordinator(hass, call)

@@ -14,6 +14,7 @@ from homeassistant.util import dt as dt_util
 
 from .coordinator import YuvomiCoordinator, YuvomiData, first, parse_date
 from .entity import YuvomiEntity, module_available
+from .util import pantry_low
 from .sensor import YuvomiSensorDescription
 from . import leaderboard
 from .util import rrule_text, txt
@@ -41,12 +42,7 @@ def _days(d: date | None) -> int | None:
 
 
 def _pantry_low(d: YuvomiData) -> list[dict[str, Any]]:
-    out = []
-    for i in d.pantry:
-        q, mn = _f(i.get("quantity")), _f(first(i, "min_quantity", "minimum", "min_stock"))
-        if q is not None and (q <= 0 or (mn is not None and q <= mn)):
-            out.append(i)
-    return out
+    return pantry_low(d.pantry)
 
 
 def _subs_monthly(d: YuvomiData) -> float | None:

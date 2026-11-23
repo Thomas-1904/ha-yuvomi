@@ -85,3 +85,21 @@ def echo_body(current: dict, skip) -> dict:
             v = [x["id"] for x in v]
         body[k] = v
     return body
+
+
+def _num(v: Any) -> float | None:
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
+def pantry_low(items: list[dict]) -> list[dict]:
+    """Pantry items that are empty or at/below their minimum stock."""
+    out = []
+    for i in items:
+        q = _num(i.get("quantity"))
+        mn = next((_num(i.get(k)) for k in ("min_quantity", "minimum", "min_stock") if i.get(k) is not None), None)
+        if q is not None and (q <= 0 or (mn is not None and q <= mn)):
+            out.append(i)
+    return out
