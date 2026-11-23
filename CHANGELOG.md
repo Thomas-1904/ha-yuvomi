@@ -4,6 +4,8 @@ All notable changes to this integration. Versions follow `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+## 0.6.0 – 2026-11-23
+
 ### Changed
 - **Much less load on the Yuvomi server.** Data that changes during the day (tasks, shopping, meals, pantry, cleaning plan, reminders, dashboard) is still fetched every cycle; data that rarely changes (birthdays, recipes, inventory, budget, health, points history, family members …) is fetched every 10 minutes, at midnight and right away after a webhook from Yuvomi or a change made in Home Assistant. The task history behind points and the leaderboard is reloaded as soon as a task changes. Requests now run side by side (up to 4 at once), so a refresh is faster too. With all modules on, this saves roughly two thirds of the requests.
 - The compatibility check (*Repairs*) now also runs when Yuvomi was updated while Home Assistant kept running; the Yuvomi version is re-read every 10 minutes.
