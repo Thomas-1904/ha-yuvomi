@@ -173,7 +173,7 @@ Delete the integration under Settings → Devices & services, then remove it in 
 
 This is a hobby project, maintained in my spare time as time and interest allow. Issues and pull requests are welcome, but there is no guaranteed response time or support.
 
-This integration was developed with AI assistance (Claude by Anthropic). Concept, requirements, testing and maintenance are by Thomas-1904. Changes are reviewed and covered by automated tests, and the integration is in daily use with the author's own Yuvomi instance.
+This integration was developed with AI assistance (Claude by Anthropic). Concept, requirements, testing and maintenance are by Thomas-1904. Changes are reviewed and covered by automated tests, and the integration is in daily use with the author's own Yuvomi instance. A weekly automated check compares it with the API description of the newest Yuvomi release and reports differences as an issue.
 
 ## License
 

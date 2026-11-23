@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import asyncio
+from collections.abc import Awaitable, Callable
+import copy
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 import json
 import logging
+import time
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -28,6 +32,14 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 TASK_STATUSES = ("open", "in_progress", "done")
+# Data that rarely changes (birthdays, recipes, budget, points history …) is fetched in full
+# only this often – and right away after a webhook from Yuvomi or a change made in HA.
+SLOW_EVERY = 600  # seconds
+PARALLEL = 4  # requests at the same time
+
+
+def _changed(before: list[dict[str, Any]], after: list[dict[str, Any]]) -> bool:
+    return json.dumps(before, sort_keys=True, default=str) != json.dumps(after, sort_keys=True, default=str)
 
 
 def enabled_modules(entry: ConfigEntry) -> set[str]:
@@ -116,6 +128,12 @@ class YuvomiCoordinator(DataUpdateCoordinator[YuvomiData]):
         self.modules = enabled_modules(entry)
         self.fire_events = entry.options.get(CONF_EVENTS, True)
         self._last: YuvomiData | None = None
+        self._full = True
+        self._slow_at = 0.0
+        self._day: date | None = None
+        self._sem = asyncio.Semaphore(PARALLEL)
+        # Called when Yuvomi reports another version (it was updated) – set up in __init__
+        self.on_version_change: Callable[[], Awaitable[None]] | None = None
         self.bring_sync = None  # BringSync, wenn in den Optionen eingerichtet
 
     def on(self, module: str) -> bool:
@@ -135,17 +153,70 @@ class YuvomiCoordinator(DataUpdateCoordinator[YuvomiData]):
         data.modules_ok[key] = True
         return result
 
+    async def async_request_refresh(self) -> None:
+        """A change (webhook from Yuvomi, a write from HA) reloads everything, not only the fast part."""
+        self._full = True
+        await super().async_request_refresh()
+
+    async def _gather(self, *coros: Any) -> None:
+        """Run fetches side by side (at most PARALLEL at once); the first error wins, auth errors first."""
+
+        async def limited(c: Any) -> Any:
+            async with self._sem:
+                return await c
+
+        results = await asyncio.gather(*(limited(c) for c in coros), return_exceptions=True)
+        errors = [r for r in results if isinstance(r, BaseException)]
+        if errors:
+            raise next((e for e in errors if isinstance(e, YuvomiAuthError)), errors[0])
+
     async def _async_update_data(self) -> YuvomiData:
-        d = YuvomiData()
         prev = self._last or YuvomiData()
         today = dt_util.now().date()
+        now = time.monotonic()
+        full = (
+            self._full
+            or self._last is None
+            or today != self._day
+            or now - self._slow_at >= SLOW_EVERY
+        )
+        self._full = False
+        if full:
+            d = YuvomiData()
+        else:
+            # Fast cycle: keep the slow data of the last full refresh, fetch only what changes often
+            d = copy.copy(prev)
+            d.modules_ok = dict(prev.modules_ok)
+            d.shopping_items = {}
         try:
-            # After an outage (e.g. Yuvomi was restarted for an update) read the version again
-            d.version = (prev.version if self.last_update_success else None) or await self.client.version()
+            await self._fetch(d, prev, today, full)
+        except YuvomiAuthError as err:
+            self._full = True
+            raise ConfigEntryAuthFailed(str(err)) from err
+        except YuvomiError as err:
+            self._full = True
+            raise UpdateFailed(f"Yuvomi not reachable: {err}") from err
 
+        if full:
+            self._slow_at, self._day = now, today
+        if prev.version and d.version and prev.version != d.version and self.on_version_change:
+            self.hass.async_create_task(self.on_version_change(), eager_start=False)
+        if self._last is not None and self.fire_events:
+            self._fire_changes(prev, d)
+        self._last = d
+        return d
+
+    async def _fetch(self, d: YuvomiData, prev: YuvomiData, today: date, full: bool) -> None:
+        # Re-read the version with every full refresh and after an outage (Yuvomi restarted for an update)
+        d.version = (prev.version if self.last_update_success and not full else None) or await self.client.version()
+
+        async def dashboard() -> None:
             dash = unwrap(await self._opt("dashboard", d, "/api/v1/dashboard", {"events_limit": 12}))
             d.dashboard = dash if isinstance(dash, dict) else {}
+            if self.on("calendar"):
+                d.modules_ok["calendar"] = d.modules_ok.get("dashboard", False)
 
+        async def family() -> None:
             fam = [m for m in as_list(await self._opt("family", d, "/api/v1/family/members")) if m.get("id") is not None]
             d.members = {int(m["id"]): m.get("display_name") or str(m["id"]) for m in fam}
             d.member_info = {
@@ -153,155 +224,132 @@ class YuvomiCoordinator(DataUpdateCoordinator[YuvomiData]):
                 for m in fam
             }
 
-            if self.on("tasks"):
-                tasks = await self._opt(
-                    "tasks",
-                    d,
-                    "/api/v1/tasks",
-                    [("status", s) for s in TASK_STATUSES] + [("include_future", "1")],
-                )
-                d.tasks = [t for t in as_list(tasks, "tasks") if not t.get("parent_task_id")]
-                if d.modules_ok.get("tasks"):
-                    try:
-                        d.completions = as_list(
-                            await self.client.get("/api/v1/tasks/completions", params={"limit": 200}), "completions"
-                        )
-                    except YuvomiApiError:
-                        d.completions = prev.completions
+        async def tasks() -> None:
+            raw = await self._opt(
+                "tasks", d, "/api/v1/tasks", [("status", s) for s in TASK_STATUSES] + [("include_future", "1")]
+            )
+            d.tasks = [t for t in as_list(raw, "tasks") if not t.get("parent_task_id")]
+            # The completion history feeds points and leaderboard: reload it when tasks changed
+            if d.modules_ok.get("tasks") and (full or _changed(prev.tasks, d.tasks)):
+                try:
+                    d.completions = as_list(
+                        await self.client.get("/api/v1/tasks/completions", params={"limit": 200}), "completions"
+                    )
+                except YuvomiApiError:
+                    d.completions = prev.completions
+            if self.on("rewards") and not full and d.modules_ok.get("rewards") and _changed(prev.tasks, d.tasks):
+                await rewards()
 
-            if self.on("shopping"):
-                d.shopping_lists = as_list(await self._opt("shopping", d, "/api/v1/shopping"), "lists")
-                if d.modules_ok.get("shopping"):
-                    try:
-                        d.shopping_categories = as_list(await self.client.get("/api/v1/shopping/categories"), "categories")
-                    except YuvomiApiError:
-                        d.shopping_categories = prev.shopping_categories
-                    versions = as_list(await self.client.get("/api/v1/shopping/versions"))
-                    d.shopping_versions = {
-                        int(v["list_id"]): v.get("version") for v in versions if v.get("list_id") is not None
-                    }
-                    for lst in d.shopping_lists:
-                        lid = int(lst["id"])
-                        ver = d.shopping_versions.get(lid)
-                        if lid in prev.shopping_items and ver is not None and prev.shopping_versions.get(lid) == ver:
-                            d.shopping_items[lid] = prev.shopping_items[lid]
-                        else:
-                            d.shopping_items[lid] = as_list(
-                                await self.client.get(f"/api/v1/shopping/{lid}/items"), "items"
-                            )
+        async def shopping() -> None:
+            d.shopping_lists = as_list(await self._opt("shopping", d, "/api/v1/shopping"), "lists")
+            if not d.modules_ok.get("shopping"):
+                return
+            if full:
+                try:
+                    d.shopping_categories = as_list(await self.client.get("/api/v1/shopping/categories"), "categories")
+                except YuvomiApiError:
+                    d.shopping_categories = prev.shopping_categories
+            versions = as_list(await self.client.get("/api/v1/shopping/versions"))
+            d.shopping_versions = {int(v["list_id"]): v.get("version") for v in versions if v.get("list_id") is not None}
+            for lst in d.shopping_lists:
+                lid = int(lst["id"])
+                ver = d.shopping_versions.get(lid)
+                if lid in prev.shopping_items and ver is not None and prev.shopping_versions.get(lid) == ver:
+                    d.shopping_items[lid] = prev.shopping_items[lid]
+                else:
+                    d.shopping_items[lid] = as_list(await self.client.get(f"/api/v1/shopping/{lid}/items"), "items")
 
-            if self.on("calendar"):
-                d.modules_ok["calendar"] = d.modules_ok.get("dashboard", False)
+        async def simple(module: str, attr: str, path: str, params: Any = None, *keys: str) -> None:
+            setattr(d, attr, as_list(await self._opt(module, d, path, params), *keys))
 
-            if self.on("meals"):
-                d.meals_week = as_list(
-                    await self._opt("meals", d, "/api/v1/meals", {"week": today.isoformat()}), "meals"
-                )
+        async def budget() -> None:
+            s = unwrap(await self._opt("budget", d, "/api/v1/budget/summary", {"month": today.strftime("%Y-%m")}))
+            d.budget_summary = s if isinstance(s, dict) else {}
+            d.accounts = as_list(await self._opt("budget", d, "/api/v1/budget/accounts"), "accounts")
+            d.subscriptions = as_list(await self._opt("budget", d, "/api/v1/budget/subscriptions"), "subscriptions")
 
+        async def loans() -> None:
+            raw = unwrap(await self._opt("loans", d, "/api/v1/budget/loans"))
+            d.loans = as_list(raw, "loans")
+            if isinstance(raw, dict):
+                d.loans_summary = raw.get("summary") or {}
+
+        async def split() -> None:
+            s = unwrap(await self._opt("split", d, "/api/v1/split-expenses/dashboard"))
+            d.split = s if isinstance(s, dict) else {}
+
+        async def rewards() -> None:
+            r = unwrap(await self._opt("rewards", d, "/api/v1/rewards/overview"))
+            d.rewards = r if isinstance(r, dict) else {}
+            m = unwrap(await self._opt("rewards", d, "/api/v1/rewards/money"))
+            d.money = as_list(m, "accounts")
+            if d.modules_ok.get("rewards"):
+                try:
+                    d.ledger = as_list(
+                        await self.client.get("/api/v1/rewards/ledger", params={"limit": 500}), "entries", "ledger"
+                    )
+                except YuvomiApiError:
+                    d.ledger = prev.ledger
+
+        async def health() -> None:
+            d.medications = as_list(await self._opt("health", d, "/api/v1/health/medications", {"active": 1}), "medications")
+            d.vitals = as_list(
+                await self._opt("health", d, "/api/v1/health/vitals", {"from": (today - timedelta(days=30)).isoformat()}),
+                "vitals",
+            )
+            d.prevention_due = as_list(await self._opt("health", d, "/api/v1/health/prevention/due"))
+            n = unwrap(await self._opt("health", d, "/api/v1/health/nutrition/summary"))
+            d.nutrition = n if isinstance(n, dict) else {}
+
+        # Fast part: every cycle – what the family changes during the day
+        jobs: list[Any] = [dashboard()]
+        if self.on("tasks"):
+            jobs.append(tasks())
+        if self.on("shopping"):
+            jobs.append(shopping())
+        if self.on("meals"):
+            jobs.append(simple("meals", "meals_week", "/api/v1/meals", {"week": today.isoformat()}, "meals"))
+        if self.on("pantry"):
+            jobs.append(simple("pantry", "pantry", "/api/v1/pantry", None, "items"))
+        if self.on("housekeeping"):
+            jobs.append(simple("housekeeping", "housekeeping", "/api/v1/housekeeping/decay-tasks", None, "tasks"))
+        if self.on("reminders"):
+            jobs.append(simple("reminders", "reminders", "/api/v1/reminders/pending", None, "reminders"))
+
+        # Slow part: every SLOW_EVERY, at midnight, and right after any change (webhook / write from HA)
+        if full:
+            jobs.append(family())
             if self.on("recipes"):
-                d.recipes = as_list(await self._opt("recipes", d, "/api/v1/recipes"), "recipes")
-
-            if self.on("pantry"):
-                d.pantry = as_list(await self._opt("pantry", d, "/api/v1/pantry"), "items")
-
+                jobs.append(simple("recipes", "recipes", "/api/v1/recipes", None, "recipes"))
             if self.on("inventory"):
-                d.inventory = as_list(await self._opt("inventory", d, "/api/v1/inventory/items"), "items")
-
-            if self.on("housekeeping"):
-                d.housekeeping = as_list(
-                    await self._opt("housekeeping", d, "/api/v1/housekeeping/decay-tasks"), "tasks"
-                )
-
+                jobs.append(simple("inventory", "inventory", "/api/v1/inventory/items", None, "items"))
             if self.on("waste"):
-                d.waste_next = as_list(await self._opt("waste", d, "/api/v1/waste/occurrences/next"))
-
+                jobs.append(simple("waste", "waste_next", "/api/v1/waste/occurrences/next"))
             if self.on("birthdays"):
-                d.birthdays = as_list(await self._opt("birthdays", d, "/api/v1/birthdays"), "birthdays")
-
+                jobs.append(simple("birthdays", "birthdays", "/api/v1/birthdays", None, "birthdays"))
             if self.on("budget"):
-                s = unwrap(
-                    await self._opt("budget", d, "/api/v1/budget/summary", {"month": today.strftime("%Y-%m")})
-                )
-                d.budget_summary = s if isinstance(s, dict) else {}
-                d.accounts = as_list(await self._opt("budget", d, "/api/v1/budget/accounts"), "accounts")
-                d.subscriptions = as_list(
-                    await self._opt("budget", d, "/api/v1/budget/subscriptions"), "subscriptions"
-                )
-
+                jobs.append(budget())
             if self.on("loans"):
-                raw = unwrap(await self._opt("loans", d, "/api/v1/budget/loans"))
-                d.loans = as_list(raw, "loans")
-                if isinstance(raw, dict):
-                    d.loans_summary = raw.get("summary") or {}
-
+                jobs.append(loans())
             if self.on("split"):
-                s = unwrap(await self._opt("split", d, "/api/v1/split-expenses/dashboard"))
-                d.split = s if isinstance(s, dict) else {}
-
+                jobs.append(split())
             if self.on("rewards"):
-                r = unwrap(await self._opt("rewards", d, "/api/v1/rewards/overview"))
-                d.rewards = r if isinstance(r, dict) else {}
-                m = unwrap(await self._opt("rewards", d, "/api/v1/rewards/money"))
-                d.money = as_list(m, "accounts")
-                if d.modules_ok.get("rewards"):
-                    try:
-                        d.ledger = as_list(
-                            await self.client.get("/api/v1/rewards/ledger", params={"limit": 500}), "entries", "ledger"
-                        )
-                    except YuvomiApiError:
-                        d.ledger = prev.ledger
-
-            if self.on("reminders"):
-                d.reminders = as_list(await self._opt("reminders", d, "/api/v1/reminders/pending"), "reminders")
-
+                jobs.append(rewards())
             if self.on("notes"):
-                d.notes = as_list(await self._opt("notes", d, "/api/v1/notes"), "notes")
-
+                jobs.append(simple("notes", "notes", "/api/v1/notes", None, "notes"))
             if self.on("contacts"):
-                d.contacts = as_list(await self._opt("contacts", d, "/api/v1/contacts"), "contacts")
-
+                jobs.append(simple("contacts", "contacts", "/api/v1/contacts", None, "contacts"))
             if self.on("documents"):
-                d.documents = as_list(
-                    await self._opt("documents", d, "/api/v1/documents", {"expiring": 60}), "documents"
-                )
-
+                jobs.append(simple("documents", "documents", "/api/v1/documents", {"expiring": 60}, "documents"))
             if self.on("schedule"):
-                d.shifts = as_list(
-                    await self._opt(
-                        "schedule",
-                        d,
-                        "/api/v1/schedule/entries",
-                        {"from": today.isoformat(), "to": (today + timedelta(days=7)).isoformat()},
-                    ),
-                    "entries",
-                )
-
+                jobs.append(simple(
+                    "schedule", "shifts", "/api/v1/schedule/entries",
+                    {"from": today.isoformat(), "to": (today + timedelta(days=7)).isoformat()}, "entries",
+                ))
             if self.on("health"):
-                d.medications = as_list(
-                    await self._opt("health", d, "/api/v1/health/medications", {"active": 1}), "medications"
-                )
-                d.vitals = as_list(
-                    await self._opt(
-                        "health",
-                        d,
-                        "/api/v1/health/vitals",
-                        {"from": (today - timedelta(days=30)).isoformat()},
-                    ),
-                    "vitals",
-                )
-                d.prevention_due = as_list(await self._opt("health", d, "/api/v1/health/prevention/due"))
-                n = unwrap(await self._opt("health", d, "/api/v1/health/nutrition/summary"))
-                d.nutrition = n if isinstance(n, dict) else {}
+                jobs.append(health())
 
-        except YuvomiAuthError as err:
-            raise ConfigEntryAuthFailed(str(err)) from err
-        except YuvomiError as err:
-            raise UpdateFailed(f"Yuvomi not reachable: {err}") from err
-
-        if self._last is not None and self.fire_events:
-            self._fire_changes(prev, d)
-        self._last = d
-        return d
+        await self._gather(*jobs)
 
     # --- Änderungsereignisse (Yuvomi -> HA) ------------------------------
 

@@ -59,6 +59,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: YuvomiConfigEntry) -> bo
         entry.data[CONF_TOKEN],
     )
     coordinator = YuvomiCoordinator(hass, entry, client)
+    # Yuvomi was updated while HA kept running: check the compatibility again
+    coordinator.on_version_change = lambda: _check_version(hass, entry, client)
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
 

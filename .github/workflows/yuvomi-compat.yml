@@ -1,0 +1,87 @@
+name: Yuvomi compatibility
+
+# Weekly: check the integration against the API description of the newest Yuvomi release.
+# Yuvomi refuses requests outside its published schemas, so a stricter schema can break a
+# service before anybody notices. On a mismatch this opens an issue (one per Yuvomi version).
+
+on:
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+  push:
+    paths:
+      - scripts/check_yuvomi_api.py
+      - .github/workflows/yuvomi-compat.yml
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Newest Yuvomi release
+        id: tag
+        run: |
+          tag=$(git ls-remote --tags --refs https://github.com/ulsklyc/yuvomi 'v*' \
+            | sed 's#.*refs/tags/##' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "Yuvomi $tag"
+
+      - name: Fetch Yuvomi ${{ steps.tag.outputs.tag }}
+        run: git clone -q --depth 1 --branch "${{ steps.tag.outputs.tag }}" https://github.com/ulsklyc/yuvomi "$RUNNER_TEMP/yuvomi"
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Build the API description
+        id: spec
+        run: |
+          cd "$RUNNER_TEMP/yuvomi"
+          node --input-type=module -e "const m = await import('./server/openapi.js'); console.log(JSON.stringify(m.buildOpenApiSpec()))" > "$RUNNER_TEMP/openapi.json"
+          api=$(grep -oE 'CLIENT_API_VERSION *= *[0-9]+' server/index.js | grep -oE '[0-9]+$' || true)
+          echo "client_api=$api" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - run: pip install jsonschema
+
+      - name: Check
+        id: check
+        run: |
+          set +e
+          args=""
+          [ -n "${{ steps.spec.outputs.client_api }}" ] && args="--client-api ${{ steps.spec.outputs.client_api }}"
+          python scripts/check_yuvomi_api.py "$RUNNER_TEMP/openapi.json" $args > "$RUNNER_TEMP/report.md"
+          rc=$?
+          cat "$RUNNER_TEMP/report.md"
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Open an issue
+        if: steps.check.outputs.rc != '0' && github.event_name != 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          title="Yuvomi $TAG: compatibility check found differences"
+          if gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number' | grep -q .; then
+            echo "Issue already open"; exit 0
+          fi
+          {
+            echo "The weekly check against the API description of Yuvomi **$TAG** found differences:"
+            echo
+            cat "$RUNNER_TEMP/report.md"
+            echo
+            echo "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          } > "$RUNNER_TEMP/body.md"
+          gh issue create --title "$title" --body-file "$RUNNER_TEMP/body.md"
+
+      - name: Fail on differences
+        if: steps.check.outputs.rc != '0'
+        run: exit 1

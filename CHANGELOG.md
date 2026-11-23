@@ -4,6 +4,13 @@ All notable changes to this integration. Versions follow `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+### Changed
+- **Much less load on the Yuvomi server.** Data that changes during the day (tasks, shopping, meals, pantry, cleaning plan, reminders, dashboard) is still fetched every cycle; data that rarely changes (birthdays, recipes, inventory, budget, health, points history, family members …) is fetched every 10 minutes, at midnight and right away after a webhook from Yuvomi or a change made in Home Assistant. The task history behind points and the leaderboard is reloaded as soon as a task changes. Requests now run side by side (up to 4 at once), so a refresh is faster too. With all modules on, this saves roughly two thirds of the requests.
+- The compatibility check (*Repairs*) now also runs when Yuvomi was updated while Home Assistant kept running; the Yuvomi version is re-read every 10 minutes.
+
+### Maintenance
+- A weekly GitHub workflow checks the integration against the API description of the newest Yuvomi release (paths, request bodies, `client_api`) and opens an issue when something no longer fits.
+
 ### Fixed
 - **`yuvomi.pantry_to_shopping`** added nothing: Yuvomi expects the items to transfer, and since 2.94 it refuses the request without them. The service now puts every pantry item that is empty or at/below its minimum stock on the shopping list (items already on the list are skipped by Yuvomi).
 
